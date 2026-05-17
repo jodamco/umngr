@@ -24,6 +24,7 @@ class _CreateGoalSheetState extends State<CreateGoalSheet> {
   Set<int> selectedDays = <int>{0, 2, 4}; // M, W, F
   int selectedDayOfMonth = 1;
   late List<TimeOfDay> checkpointTimes;
+  GoalDataMetricType selectedProtocol = GoalDataMetricType.numericVal;
 
   // Error states for inline error messages
   String? daysError;
@@ -135,13 +136,16 @@ class _CreateGoalSheetState extends State<CreateGoalSheet> {
     final NewGoalModel newGoal = NewGoalModel(
       name: goalNameController.text,
       category: selectedCategory,
-      occurrences: occurrencesPerCycle,
+      occurrences: selectedCycle == GoalCycle.daily
+          ? occurrencesPerCycle
+          : null,
       cycle: selectedCycle,
       activeDays: selectedDays.toList(),
       dayOfMonth: selectedCycle == GoalCycle.monthly
           ? selectedDayOfMonth
           : null,
       checkpoints: checkpointTimes,
+      dataMetricType: selectedProtocol,
     );
 
     widget.onGoalCreated?.call(newGoal);
@@ -247,6 +251,7 @@ class _CreateGoalSheetState extends State<CreateGoalSheet> {
                     dayLabels: dayLabels,
                     selectedDayOfMonth: selectedDayOfMonth,
                     dayOfMonthController: dayOfMonthController,
+                    occurrencesPerCycle: occurrencesPerCycle,
                     onCycleChanged: (GoalCycle value) {
                       setState(() {
                         selectedCycle = value;
@@ -256,6 +261,11 @@ class _CreateGoalSheetState extends State<CreateGoalSheet> {
                     onDayOfMonthChanged: (int value) {
                       setState(() {
                         selectedDayOfMonth = value;
+                      });
+                    },
+                    onOcurrencesChanged: (int value) {
+                      setState(() {
+                        occurrencesPerCycle = value;
                       });
                     },
                     buildSection: _buildSection,
@@ -268,17 +278,6 @@ class _CreateGoalSheetState extends State<CreateGoalSheet> {
                         fontSize: 12,
                       ),
                     ),
-
-                  // Section 3: Occurrences Stepper
-                  _OccurrencesSection(
-                    theme: theme,
-                    occurrencesPerCycle: occurrencesPerCycle,
-                    onOccurrencesChanged: (int value) {
-                      setState(() {
-                        occurrencesPerCycle = value;
-                      });
-                    },
-                  ),
 
                   // Section 5: Checkpoints
                   _CheckpointsSection(
@@ -299,10 +298,24 @@ class _CreateGoalSheetState extends State<CreateGoalSheet> {
                       ),
                     ),
 
+                  // Data Logging Protocol
+                  _DataLoggingProtocolSection(
+                    theme: theme,
+                    selectedProtocol: selectedProtocol,
+                    onProtocolChanged: (GoalDataMetricType value) {
+                      setState(() {
+                        selectedProtocol = value;
+                      });
+                    },
+                    buildSection: _buildSection,
+                  ),
+
                   // Goal Intensity Visualization
                   _GoalIntensitySection(
                     theme: theme,
-                    occurrencesPerCycle: occurrencesPerCycle,
+                    selectedCycle: selectedCycle,
+                    selectedDays: selectedDays,
+                    selectedDayOfMonth: selectedDayOfMonth,
                     checkpointTimes: checkpointTimes,
                   ),
 
@@ -499,9 +512,11 @@ class _GoalCycleSection extends StatelessWidget {
   final List<String> dayLabels;
   final int selectedDayOfMonth;
   final TextEditingController dayOfMonthController;
+  final int occurrencesPerCycle;
   final Function(GoalCycle) onCycleChanged;
   final Function(int) onDayToggled;
   final Function(int) onDayOfMonthChanged;
+  final Function(int) onOcurrencesChanged;
   final Widget Function({required String title, required Widget child})
   buildSection;
 
@@ -512,9 +527,11 @@ class _GoalCycleSection extends StatelessWidget {
     required this.dayLabels,
     required this.selectedDayOfMonth,
     required this.dayOfMonthController,
+    required this.occurrencesPerCycle,
     required this.onCycleChanged,
     required this.onDayToggled,
     required this.onDayOfMonthChanged,
+    required this.onOcurrencesChanged,
     required this.buildSection,
   });
 
@@ -691,26 +708,33 @@ class _GoalCycleSection extends StatelessWidget {
                 ],
               ),
             ),
-          if (selectedCycle == GoalCycle.monthly)
-            Container(
-              padding: const EdgeInsets.only(left: 12, top: 8, bottom: 8),
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    color: theme.colorScheme.primary,
-                    width: 2,
-                  ),
-                ),
-              ),
-              child: Text(
-                'Precision scheduling reduces the margin for excuse. Interval-based monitoring initiated.',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 10,
-                  fontStyle: FontStyle.italic,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+
+          if (selectedCycle == GoalCycle.daily)
+            _OccurrencesSection(
+              theme: theme,
+              occurrencesPerCycle: occurrencesPerCycle,
+              onOccurrencesChanged: onOcurrencesChanged,
+            ),
+
+          Container(
+            padding: const EdgeInsets.only(left: 12, top: 8, bottom: 8),
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
                 ),
               ),
             ),
+            child: Text(
+              'Precision scheduling reduces the margin for excuse. Interval-based monitoring initiated.',
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontSize: 10,
+                fontStyle: FontStyle.italic,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -994,19 +1018,52 @@ class _CheckpointsSection extends StatelessWidget {
 
 class _GoalIntensitySection extends StatelessWidget {
   final ThemeData theme;
-  final int occurrencesPerCycle;
+  final GoalCycle selectedCycle;
+  final Set<int> selectedDays;
+  final int selectedDayOfMonth;
   final List<TimeOfDay> checkpointTimes;
 
   const _GoalIntensitySection({
     required this.theme,
-    required this.occurrencesPerCycle,
+    required this.selectedCycle,
+    required this.selectedDays,
+    required this.selectedDayOfMonth,
     required this.checkpointTimes,
   });
 
+  double _calculatePeakLoad() {
+    // Calculate active days within a 15-day rolling window
+    double activeDays = 0;
+
+    switch (selectedCycle) {
+      case GoalCycle.daily:
+        // Daily tasks occur every day
+        activeDays = 15;
+        break;
+      case GoalCycle.weekly:
+        // Weekly: selectedDays per week * 2 weeks in 15 days
+        activeDays = selectedDays.length * (15 / 7);
+        break;
+      case GoalCycle.biWeekly:
+        // Bi-weekly: selectedDays per 2 weeks * 1.07 (half + a day in 15 days)
+        activeDays = selectedDays.length * (15 / 14);
+        break;
+      case GoalCycle.monthly:
+        // Monthly: occurs once per month, so 0.5 times in a 15-day window
+        activeDays = 0.5;
+        break;
+    }
+
+    // PEAK_LOAD = (Active Days / 15) * (Checkpoints Per Day)
+    final double checkpointsPerDay = checkpointTimes.length.toDouble();
+    return (activeDays / 15) * checkpointsPerDay;
+  }
+
   String _getIntensityLabel() {
-    if (occurrencesPerCycle <= 2) {
+    final double peakLoad = _calculatePeakLoad();
+    if (peakLoad < 1.0) {
       return 'Low';
-    } else if (occurrencesPerCycle <= 5) {
+    } else if (peakLoad <= 3.0) {
       return 'Moderate';
     } else {
       return 'High';
@@ -1014,9 +1071,10 @@ class _GoalIntensitySection extends StatelessWidget {
   }
 
   String _getPersonaName() {
-    if (occurrencesPerCycle <= 2) {
+    final double peakLoad = _calculatePeakLoad();
+    if (peakLoad < 1.0) {
       return 'Sub-Optimal Commitment';
-    } else if (occurrencesPerCycle <= 5) {
+    } else if (peakLoad <= 3.0) {
       return 'Standard Compliance';
     } else {
       return 'Masochistic Tendencies';
@@ -1024,9 +1082,10 @@ class _GoalIntensitySection extends StatelessWidget {
   }
 
   String _getPersonaCopy() {
-    if (occurrencesPerCycle <= 2) {
+    final double peakLoad = _calculatePeakLoad();
+    if (peakLoad < 1.0) {
       return 'A minimal effort. I suppose even a fractured resolve is better than total apathy.';
-    } else if (occurrencesPerCycle <= 5) {
+    } else if (peakLoad <= 3.0) {
       return 'A reasonable burden. I have allocated the necessary bandwidth to watch you fail at this.';
     } else {
       return 'Ambitious. Your over-commitment provides me with a delightful surplus of data points to judge.';
@@ -1034,13 +1093,9 @@ class _GoalIntensitySection extends StatelessWidget {
   }
 
   double _getIntensityValue() {
-    if (occurrencesPerCycle <= 2) {
-      return 0.33;
-    } else if (occurrencesPerCycle <= 5) {
-      return 0.66;
-    } else {
-      return 1.0;
-    }
+    final double peakLoad = _calculatePeakLoad();
+    // Normalize to 0-1 for progress bar
+    return (peakLoad / 4.0).clamp(0.0, 1.0);
   }
 
   @override
@@ -1098,6 +1153,13 @@ class _GoalIntensitySection extends StatelessWidget {
                               letterSpacing: 0.5,
                             ),
                           ),
+                          Text(
+                            'Score: ${_calculatePeakLoad().toStringAsFixed(2)}',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontSize: 8,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
                         ],
                       ),
                       Column(
@@ -1113,14 +1175,29 @@ class _GoalIntensitySection extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Text(
-                            '${checkpointTimes.length} checkpoints',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface,
-                              letterSpacing: 0.5,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            spacing: 2,
+                            children: <Widget>[
+                              Text(
+                                '${checkpointTimes.length} checkpoints',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onSurface,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              Text(
+                                '${selectedDays.length} days/cycle',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  fontSize: 9,
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -1181,6 +1258,136 @@ class _GoalIntensitySection extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DataLoggingProtocolSection extends StatelessWidget {
+  final ThemeData theme;
+  final GoalDataMetricType selectedProtocol;
+  final Function(GoalDataMetricType) onProtocolChanged;
+  final Widget Function({required String title, required Widget child})
+  buildSection;
+
+  static const Map<GoalDataMetricType, Map<String, String>> protocolDetails =
+      <GoalDataMetricType, Map<String, String>>{
+        GoalDataMetricType.nullSet: <String, String>{
+          'label': 'NULL_SET',
+          'type': 'NONE',
+        },
+        GoalDataMetricType.numericVal: <String, String>{
+          'label': 'NUMERIC_VAL',
+          'type': 'QUANTITATIVE',
+        },
+        GoalDataMetricType.boolFlag: <String, String>{
+          'label': 'BOOL_FLAG',
+          'type': 'BINARY',
+        },
+        GoalDataMetricType.timeElapsed: <String, String>{
+          'label': 'TIME_ELAPSED',
+          'type': 'DURATION',
+        },
+        GoalDataMetricType.loadFactor: <String, String>{
+          'label': 'LOAD_FACTOR',
+          'type': 'INTENSITY',
+        },
+      };
+
+  const _DataLoggingProtocolSection({
+    required this.theme,
+    required this.selectedProtocol,
+    required this.onProtocolChanged,
+    required this.buildSection,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return buildSection(
+      title: 'DATA LOGGING PROTOCOL',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 12,
+        children: <Widget>[
+          GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 2,
+            ),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: GoalDataMetricType.values.length,
+            itemBuilder: (BuildContext context, int index) {
+              final GoalDataMetricType protocol =
+                  GoalDataMetricType.values[index];
+              final bool isSelected = protocol == selectedProtocol;
+              final Map<String, String> details = protocolDetails[protocol]!;
+
+              return GestureDetector(
+                onTap: () => onProtocolChanged(protocol),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.outline.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                    color: isSelected
+                        ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                        : theme.colorScheme.surface.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 4,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          details['label']!,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.7,
+                                  ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          details['type']!,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 9,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.6,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          Text(
+            'System requires specific data types for precision monitoring.',
+            style: theme.textTheme.labelSmall?.copyWith(
+              fontSize: 9,
+              fontStyle: FontStyle.italic,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ],
       ),
     );
   }

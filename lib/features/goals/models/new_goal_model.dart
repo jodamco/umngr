@@ -7,31 +7,42 @@ enum GoalCycle {
   monthly,
 }
 
+enum GoalDataMetricType {
+  nullSet,
+  numericVal,
+  boolFlag,
+  timeElapsed,
+  loadFactor,
+}
+
 class NewGoalModel {
   final String name;
   final String category;
-  final int occurrences;
   final GoalCycle cycle;
   final List<int> activeDays;
-  final int? dayOfMonth;
   final List<TimeOfDay> checkpoints;
+  final GoalDataMetricType dataMetricType;
+  final int? occurrences;
+  final int? dayOfMonth;
 
   NewGoalModel({
     required this.name,
     required this.category,
-    required this.occurrences,
     required this.cycle,
     required this.activeDays,
-    this.dayOfMonth,
     required this.checkpoints,
+    required this.dataMetricType,
+    this.occurrences,
+    this.dayOfMonth,
   }) : assert(
-    cycle != GoalCycle.monthly || dayOfMonth != null,
-    'dayOfMonth is required for monthly cycles',
-  );
+         (cycle != GoalCycle.monthly || dayOfMonth != null) &&
+             (cycle == GoalCycle.daily || occurrences == null),
+         'dayOfMonth is required for monthly cycles, and occurrences should only be set for daily cycles',
+       );
 
   @override
   String toString() {
-    return 'NewGoalModel(name: $name, category: $category, occurrences: $occurrences, cycle: $cycle, activeDays: $activeDays, dayOfMonth: $dayOfMonth, checkpoints: $checkpoints)';
+    return 'NewGoalModel(name: $name, category: $category, occurrences: $occurrences, cycle: $cycle, activeDays: $activeDays, dayOfMonth: $dayOfMonth, checkpoints: $checkpoints, dataMetricType: $dataMetricType)';
   }
 
   @override
@@ -45,7 +56,8 @@ class NewGoalModel {
           cycle == other.cycle &&
           activeDays == other.activeDays &&
           dayOfMonth == other.dayOfMonth &&
-          checkpoints == other.checkpoints;
+          checkpoints == other.checkpoints &&
+          dataMetricType == other.dataMetricType;
 
   @override
   int get hashCode =>
@@ -55,5 +67,6 @@ class NewGoalModel {
       cycle.hashCode ^
       activeDays.hashCode ^
       dayOfMonth.hashCode ^
-      checkpoints.hashCode;
+      checkpoints.hashCode ^
+      dataMetricType.hashCode;
 }
