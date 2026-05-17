@@ -1,0 +1,26 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    always_specify_types: true
+    always_declare_return_types: true
+    always_use_package_imports: true
+    cancel_subscriptions: true
+    unnecessary_ignore: true
+    flutter_style_todos: false
+    unintended_html_in_doc_comment: false
+    prefer_const_constructors: true
+    unnecessary_lambdas: true
+
+analyzer:
+  exclude:
+    - build/**
+    - .dart_tool/**
+    - gen/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.mocks.dart"
+
+formatter:
+  trailing_commas: preserve
