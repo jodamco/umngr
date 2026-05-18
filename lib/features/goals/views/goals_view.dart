@@ -8,6 +8,7 @@ import 'package:micro_manager/features/goals/views/widgets/active_goal_card.dart
 import 'package:micro_manager/features/goals/views/widgets/summary_card.dart';
 import 'package:micro_manager/features/goals/views/widgets/efficiency_rating_card.dart';
 import 'package:micro_manager/features/goals/views/widgets/create_goal_sheet.dart';
+import 'package:micro_manager/features/goals/views/widgets/goals_loading_state.dart';
 
 class GoalsView extends StatefulWidget {
   const GoalsView({super.key});
@@ -24,7 +25,27 @@ class _GoalsViewState extends State<GoalsView> {
   void initState() {
     super.initState();
     _goalsDAL = getIt<GoalsDAL>();
-    _goalsFuture = _goalsDAL.getAllGoals();
+    // Create a future that delays showing data by at least 2 seconds
+    _goalsFuture = _createDelayedGoalsFuture();
+  }
+
+  /// Creates a future that enforces a minimum 2-second display time
+  /// for the loading state before showing the actual goals data
+  Future<List<Goal>> _createDelayedGoalsFuture() async {
+    final Stopwatch stopwatch = Stopwatch()..start();
+    final List<Goal> goals = await _goalsDAL.getAllGoals();
+
+    // Ensure at least 2 seconds have elapsed
+    final int elapsedMs = stopwatch.elapsedMilliseconds;
+    const int minDurationMs = 2200;
+
+    if (elapsedMs < minDurationMs) {
+      await Future<void>.delayed(
+        Duration(milliseconds: minDurationMs - elapsedMs),
+      );
+    }
+
+    return goals;
   }
 
   Future<void> _showCreateGoalSheet(BuildContext context) async {
@@ -50,6 +71,57 @@ class _GoalsViewState extends State<GoalsView> {
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
+    return FutureBuilder<List<Goal>>(
+      future: _goalsFuture,
+      builder: (BuildContext context, AsyncSnapshot<List<Goal>> snapshot) {
+        // Show loading state while waiting
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const GoalsLoadingState();
+        }
+
+        // Show error state
+        if (snapshot.hasError) {
+          return Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(
+                left: 24,
+                top: 24,
+                right: 24,
+                bottom: 16,
+              ),
+              child: Text(
+                'Error loading goals: ${snapshot.error}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Show normal content when data is available
+        return _GoalsList(
+          goals: snapshot.data ?? <Goal>[],
+          onCreateGoal: _showCreateGoalSheet,
+        );
+      },
+    );
+  }
+}
+
+class _GoalsList extends StatelessWidget {
+  const _GoalsList({
+    required this.goals,
+    required this.onCreateGoal,
+  });
+
+  final List<Goal> goals;
+  final Future<void> Function(BuildContext) onCreateGoal;
 
   @override
   Widget build(BuildContext context) {
@@ -92,124 +164,97 @@ class _GoalsViewState extends State<GoalsView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              FutureBuilder<List<Goal>>(
-                future: _goalsFuture,
-                builder: (BuildContext context, AsyncSnapshot<List<Goal>> snapshot) {
-                  final int goalCount = snapshot.data?.length ?? 0;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            'ACTIVE_GOALS.txt',
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontSize: 14,
-                              letterSpacing: 1.2,
-                              color: theme.colorScheme.onSurface,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'COUNT: ${goalCount.toString().padLeft(2, '0')}',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontSize: 10,
-                              letterSpacing: 0.5,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        height: 1,
-                        color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                      ),
-                      const SizedBox(height: 24),
-                      // Goals List or Empty State
-                      if (snapshot.connectionState == ConnectionState.waiting)
-                        Center(
-                          child: CircularProgressIndicator(
-                            color: theme.colorScheme.primary,
-                          ),
-                        )
-                      else if (snapshot.hasError)
-                        Center(
-                          child: Text(
-                            'Error loading goals: ${snapshot.error}',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.error,
-                            ),
-                          ),
-                        )
-                      else if (snapshot.hasData && snapshot.data!.isNotEmpty)
-                        Column(
-                          children: snapshot.data!
-                              .map(
-                                (Goal goal) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 24),
-                                  child: ActiveGoalCard(goal: goal),
-                                ),
-                              )
-                              .toList(),
-                        )
-                      else
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: theme.colorScheme.outline,
-                              style: BorderStyle.solid,
-                            ),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 40,
-                            horizontal: 24,
-                          ),
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Icon(
-                                  Icons.sentiment_dissatisfied,
-                                  size: 32,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  '"I was hoping for a longer list to judge you by."'
-                                      .toUpperCase(),
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontSize: 14,
-                                    fontStyle: FontStyle.italic,
-                                    color: theme.colorScheme.onSurface.withValues(
-                                      alpha: 0.7,
-                                    ),
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Placeholder for your inevitable future failures.',
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    fontSize: 10,
-                                    color: theme.colorScheme.outline,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    'ACTIVE_GOALS.txt',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontSize: 14,
+                      letterSpacing: 1.2,
+                      color: theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'COUNT: ${goals.length.toString().padLeft(2, '0')}',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontSize: 10,
+                      letterSpacing: 0.5,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                height: 1,
+                color: theme.colorScheme.outline.withValues(alpha: 0.2),
+              ),
+              const SizedBox(height: 24),
+              // Goals List or Empty State
+              if (goals.isNotEmpty)
+                Column(
+                  children: goals
+                      .map(
+                        (Goal goal) => Padding(
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: ActiveGoalCard(goal: goal),
+                        ),
+                      )
+                      .toList(),
+                )
+              else
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: theme.colorScheme.outline,
+                      style: BorderStyle.solid,
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 40,
+                    horizontal: 24,
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(
+                          Icons.sentiment_dissatisfied,
+                          size: 32,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.4,
                           ),
                         ),
-                    ],
-                  );
-                },
-              ),
+                        const SizedBox(height: 16),
+                        Text(
+                          '"I was hoping for a longer list to judge you by."'
+                              .toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Placeholder for your inevitable future failures.',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 10,
+                            color: theme.colorScheme.outline,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 48),
@@ -218,7 +263,7 @@ class _GoalsViewState extends State<GoalsView> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _showCreateGoalSheet(context),
+              onPressed: () => onCreateGoal(context),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.all(24),
                 shape: const RoundedRectangleBorder(
