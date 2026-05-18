@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:micro_manager/features/goals/models/goal.dart';
+import 'package:micro_manager/features/goals/views/widgets/goal_options_sheet.dart';
 import 'package:micro_manager/shared/enums.dart';
 
 enum _GoalState {
@@ -57,7 +58,9 @@ class ActiveGoalCard extends StatelessWidget {
 
   _GoalState _getState(double score) {
     // Check if goal was recently created (2 days or less)
-    final Duration timeSinceCreation = DateTime.now().difference(goal.createdAt);
+    final Duration timeSinceCreation = DateTime.now().difference(
+      goal.createdAt,
+    );
     if (timeSinceCreation.inDays <= 2) {
       return _GoalState.uncertain;
     }
@@ -76,7 +79,8 @@ class ActiveGoalCard extends StatelessWidget {
         label: 'UNCERTAIN',
         color: theme.colorScheme.primary,
         note: 'DATA INSUFFICIENT',
-        copy: 'Goal recently initiated. Insufficient data for analysis. Collecting metrics.',
+        copy:
+            'Goal recently initiated. Insufficient data for analysis. Collecting metrics.',
       ),
       _GoalState.stable => const _GoalStateConfig(
         label: 'STABLE',
@@ -113,6 +117,17 @@ class ActiveGoalCard extends StatelessWidget {
     };
   }
 
+  void _showOptionsSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero,
+      ),
+      builder: (BuildContext context) => GoalOptionsSheet(goal: goal),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -121,140 +136,143 @@ class ActiveGoalCard extends StatelessWidget {
     final _GoalStateConfig config = _getStateConfig(state, theme);
     final Color statusColor = config.color;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.5),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.3),
-          width: 1,
+    return GestureDetector(
+      onTap: () => _showOptionsSheet(context),
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface.withValues(alpha: 0.5),
+          border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
+            width: 1,
+          ),
         ),
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: <Widget>[
-          // Goal Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: theme.colorScheme.outline.withValues(
-                            alpha: 0.3,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: <Widget>[
+            // Goal Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  child: Row(
+                    children: <Widget>[
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
                         ),
+                        padding: const EdgeInsets.all(12),
+                        child: Icon(
+                          _getIconData(_getCategoryIcon()),
+                          size: 32,
+                          color: statusColor,
+                        ),
                       ),
-                      padding: const EdgeInsets.all(12),
-                      child: Icon(
-                        _getIconData(_getCategoryIcon()),
-                        size: 32,
-                        color: statusColor,
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            goal.name.toUpperCase(),
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              color: theme.colorScheme.onSurface,
-                              fontSize: 16,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'INITIATED: ${_getInitiatedDaysAgo()} | PERSISTENCE: ${persistenceScore.toStringAsFixed(0)}%',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontSize: 10,
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.6,
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              goal.name.toUpperCase(),
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                color: theme.colorScheme.onSurface,
+                                fontSize: 16,
+                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.bold,
                               ),
-                              letterSpacing: 0.5,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              'INITIATED: ${_getInitiatedDaysAgo()} | PERSISTENCE: ${persistenceScore.toStringAsFixed(0)}%',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontSize: 10,
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Status Badge and System Note
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      border: Border.all(
+                        color: statusColor.withValues(alpha: 0.3),
+                        width: 1,
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Status Badge and System Note
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
-                    border: Border.all(
-                      color: statusColor.withValues(alpha: 0.3),
-                      width: 1,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Text(
-                    config.label,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontSize: 12,
-                      color: statusColor,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                    child: Text(
+                      config.label,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontSize: 12,
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Text(
-                config.note,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 10,
-                  color: statusColor.withValues(alpha: 0.7),
-                  letterSpacing: 0.5,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(width: 16),
+                Text(
+                  config.note,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 10,
+                    color: statusColor.withValues(alpha: 0.7),
+                    letterSpacing: 0.5,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+              ],
+            ),
+            const SizedBox(height: 16),
 
-          // State-specific copy message
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.05),
-              border: Border(
-                left: BorderSide(
-                  color: statusColor,
-                  width: 3,
+            // State-specific copy message
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.05),
+                border: Border(
+                  left: BorderSide(
+                    color: statusColor,
+                    width: 3,
+                  ),
+                ),
+              ),
+              child: Text(
+                config.copy,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                  fontSize: 11,
+                  height: 1.4,
+                  fontStyle: FontStyle.italic,
                 ),
               ),
             ),
-            child: Text(
-              config.copy,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                fontSize: 11,
-                height: 1.4,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
