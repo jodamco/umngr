@@ -16,15 +16,6 @@ enum GoalDataMetricType {
 }
 
 class NewGoalModel {
-  final String name;
-  final String category;
-  final GoalCycle cycle;
-  final List<int> activeDays;
-  final List<TimeOfDay> checkpoints;
-  final GoalDataMetricType dataMetricType;
-  final int? occurrences;
-  final int? dayOfMonth;
-
   NewGoalModel({
     required this.name,
     required this.category,
@@ -39,6 +30,15 @@ class NewGoalModel {
              (cycle == GoalCycle.daily || occurrences == null),
          'dayOfMonth is required for monthly cycles, and occurrences should only be set for daily cycles',
        );
+
+  final String name;
+  final String category;
+  final GoalCycle cycle;
+  final List<int> activeDays;
+  final List<TimeOfDay> checkpoints;
+  final GoalDataMetricType dataMetricType;
+  final int? occurrences;
+  final int? dayOfMonth;
 
   @override
   String toString() {

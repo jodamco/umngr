@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:micro_manager/features/goals/models/goal.dart';
+import 'package:micro_manager/shared/enums.dart';
 
 enum _GoalState {
+  uncertain,
   stable,
   degrading,
   atRisk,
@@ -23,20 +26,43 @@ class _GoalStateConfig {
 }
 
 class ActiveGoalCard extends StatelessWidget {
-  final String title;
-  final String icon;
-  final String initiatedDaysAgo;
-  final double persistenceScore;
+  final Goal goal;
 
   const ActiveGoalCard({
-    required this.title,
-    required this.icon,
-    this.initiatedDaysAgo = '3 DAYS AGO',
-    this.persistenceScore = 0.4,
+    required this.goal,
     super.key,
   });
 
+  /// Calculate persistence score based on goal events
+  /// Returns a value between 0-100
+  /// For now, uses event_count as a simple metric
+  double _calculatePersistenceScore() {
+    if (goal.eventCount == 0) return 0;
+    // Scale event count to a 0-100 score (adjust formula as needed)
+    return (goal.eventCount * 10).clamp(0, 100).toDouble();
+  }
+
+  String _getInitiatedDaysAgo() {
+    final Duration diff = DateTime.now().difference(goal.createdAt);
+    final int days = diff.inDays;
+    if (days == 0) return 'TODAY';
+    if (days == 1) return '1 DAY AGO';
+    return '$days DAYS AGO';
+  }
+
+  String _getCategoryIcon() {
+    final GoalCategory category = GoalCategory.fromDbValue(goal.category);
+    return category.iconName;
+  }
+
   _GoalState _getState(double score) {
+    // Check if goal was recently created (2 days or less)
+    final Duration timeSinceCreation = DateTime.now().difference(goal.createdAt);
+    if (timeSinceCreation.inDays <= 2) {
+      return _GoalState.uncertain;
+    }
+
+    // Score-based state determination
     if (score >= 90) return _GoalState.stable;
     if (score >= 70) return _GoalState.degrading;
     if (score >= 40) return _GoalState.atRisk;
@@ -44,8 +70,14 @@ class ActiveGoalCard extends StatelessWidget {
     return _GoalState.abandoned;
   }
 
-  _GoalStateConfig _getStateConfig(_GoalState state) {
+  _GoalStateConfig _getStateConfig(_GoalState state, ThemeData theme) {
     return switch (state) {
+      _GoalState.uncertain => _GoalStateConfig(
+        label: 'UNCERTAIN',
+        color: theme.colorScheme.primary,
+        note: 'DATA INSUFFICIENT',
+        copy: 'Goal recently initiated. Insufficient data for analysis. Collecting metrics.',
+      ),
       _GoalState.stable => const _GoalStateConfig(
         label: 'STABLE',
         color: Color(0xFF64FFDA),
@@ -84,8 +116,9 @@ class ActiveGoalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final double persistenceScore = _calculatePersistenceScore();
     final _GoalState state = _getState(persistenceScore);
-    final _GoalStateConfig config = _getStateConfig(state);
+    final _GoalStateConfig config = _getStateConfig(state, theme);
     final Color statusColor = config.color;
 
     return Container(
@@ -116,7 +149,7 @@ class ActiveGoalCard extends StatelessWidget {
                       ),
                       padding: const EdgeInsets.all(12),
                       child: Icon(
-                        _getIconData(icon),
+                        _getIconData(_getCategoryIcon()),
                         size: 32,
                         color: statusColor,
                       ),
@@ -127,7 +160,7 @@ class ActiveGoalCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            title,
+                            goal.name.toUpperCase(),
                             style: theme.textTheme.headlineMedium?.copyWith(
                               color: theme.colorScheme.onSurface,
                               fontSize: 16,
@@ -137,7 +170,7 @@ class ActiveGoalCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'INITIATED: $initiatedDaysAgo | PERSISTENCE: ${persistenceScore.toStringAsFixed(0)}%',
+                            'INITIATED: ${_getInitiatedDaysAgo()} | PERSISTENCE: ${persistenceScore.toStringAsFixed(0)}%',
                             style: theme.textTheme.labelSmall?.copyWith(
                               fontSize: 10,
                               color: theme.colorScheme.onSurface.withValues(
@@ -229,11 +262,13 @@ class ActiveGoalCard extends StatelessWidget {
   IconData _getIconData(String icon) {
     return switch (icon.toLowerCase()) {
       'restaurant' => Icons.restaurant,
-      'fitness_center' => Icons.fitness_center,
+      'fitness' => Icons.fitness_center,
+      'nutrition' => Icons.egg_alt,
       'book' => Icons.book,
       'code' => Icons.code,
-      'money' => Icons.money,
-      'health_and_safety' => Icons.health_and_safety,
+      'money' => Icons.savings,
+      'rest_mental' => Icons.self_improvement,
+      'people' => Icons.diversity_3,
       _ => Icons.check_circle,
     };
   }

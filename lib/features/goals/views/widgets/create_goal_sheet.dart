@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:micro_manager/features/goals/models/new_goal_model.dart';
+import 'package:micro_manager/shared/enums.dart';
 
 class CreateGoalSheet extends StatefulWidget {
   final VoidCallback? onClose;
@@ -18,7 +19,7 @@ class CreateGoalSheet extends StatefulWidget {
 class _CreateGoalSheetState extends State<CreateGoalSheet> {
   final TextEditingController goalNameController = TextEditingController();
   late TextEditingController dayOfMonthController;
-  String selectedCategory = 'CAT_BIOS_MAINTENANCE.SYS';
+  GoalCategory selectedCategory = GoalCategory.biosMaintenance;
   int occurrencesPerCycle = 3;
   GoalCycle selectedCycle = GoalCycle.weekly;
   Set<int> selectedDays = <int>{0, 2, 4}; // M, W, F
@@ -45,13 +46,6 @@ class _CreateGoalSheetState extends State<CreateGoalSheet> {
   }
 
   final List<String> dayLabels = <String>['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  final List<String> categoryOptions = <String>[
-    'CAT_BIOS_MAINTENANCE.SYS',
-    'CAT_COGNITIVE_LOAD.SYS',
-    'CAT_ASSET_MANAGEMENT.SYS',
-    'CAT_SOCIAL_PROTOCOL.SYS',
-    'CAT_SYSTEM_RECOVERY.SYS',
-  ];
 
   @override
   void dispose() {
@@ -135,7 +129,7 @@ class _CreateGoalSheetState extends State<CreateGoalSheet> {
     });
     final NewGoalModel newGoal = NewGoalModel(
       name: goalNameController.text,
-      category: selectedCategory,
+      category: selectedCategory.dbValue,
       occurrences: selectedCycle == GoalCycle.daily
           ? occurrencesPerCycle
           : null,
@@ -234,8 +228,7 @@ class _CreateGoalSheetState extends State<CreateGoalSheet> {
                   _CategorySection(
                     theme: theme,
                     selectedCategory: selectedCategory,
-                    categoryOptions: categoryOptions,
-                    onCategoryChanged: (String value) {
+                    onCategoryChanged: (GoalCategory value) {
                       setState(() {
                         selectedCategory = value;
                       });
@@ -442,25 +435,14 @@ class _GoalNameSection extends StatelessWidget {
 
 class _CategorySection extends StatelessWidget {
   final ThemeData theme;
-  final String selectedCategory;
-  final List<String> categoryOptions;
-  final Function(String) onCategoryChanged;
+  final GoalCategory selectedCategory;
+  final Function(GoalCategory) onCategoryChanged;
   final Widget Function({required String title, required Widget child})
   buildSection;
-
-  // Helper text for each category
-  static const Map<String, String> categoryHelpers = <String, String>{
-    'CAT_BIOS_MAINTENANCE.SYS': 'Wellness & Nutrition',
-    'CAT_COGNITIVE_LOAD.SYS': 'Productivity & Learning',
-    'CAT_ASSET_MANAGEMENT.SYS': 'Finance & Organization',
-    'CAT_SOCIAL_PROTOCOL.SYS': 'Relationships & Community',
-    'CAT_SYSTEM_RECOVERY.SYS': 'Rest & Mental Health',
-  };
 
   const _CategorySection({
     required this.theme,
     required this.selectedCategory,
-    required this.categoryOptions,
     required this.onCategoryChanged,
     required this.buildSection,
   });
@@ -471,18 +453,18 @@ class _CategorySection extends StatelessWidget {
       title: 'CATEGORY ASSIGNMENT',
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: double.infinity),
-        child: DropdownButtonFormField<String>(
+        child: DropdownButtonFormField<GoalCategory>(
           initialValue: selectedCategory,
-          items: categoryOptions
+          items: GoalCategory.values
               .map(
-                (String category) => DropdownMenuItem<String>(
+                (GoalCategory category) => DropdownMenuItem<GoalCategory>(
                   value: category,
-                  child: Text(category),
+                  child: Text(category.value),
                 ),
               )
               .toList(),
           isExpanded: true,
-          onChanged: (String? value) {
+          onChanged: (GoalCategory? value) {
             if (value != null) {
               onCategoryChanged(value);
             }
@@ -493,7 +475,7 @@ class _CategorySection extends StatelessWidget {
                 color: theme.colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
-            helperText: categoryHelpers[selectedCategory],
+            helperText: selectedCategory.label,
             helperStyle: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
               fontSize: 12,
