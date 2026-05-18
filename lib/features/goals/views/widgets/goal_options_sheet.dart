@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:micro_manager/features/goals/models/goal.dart';
+import 'package:micro_manager/features/goals/views/widgets/update_goal_sheet.dart';
 
 class GoalOptionsSheet extends StatelessWidget {
   final Goal goal;
+  final Function(Goal)? onGoalUpdated;
 
   const GoalOptionsSheet({
     required this.goal,
+    this.onGoalUpdated,
     super.key,
   });
 
@@ -14,17 +17,26 @@ class GoalOptionsSheet extends StatelessWidget {
     Navigator.pop(context);
   }
 
-  void _showCompleteObligation(BuildContext context) {
+  void _showCompleteGoal(BuildContext context) {
     // TODO: Implement complete obligation logic
     Navigator.pop(context);
   }
 
   void _showEditProtocol(BuildContext context) {
-    // TODO: Implement edit protocol logic
     Navigator.pop(context);
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => UpdateGoalSheet(
+        goal: goal,
+        onGoalUpdated: (Goal updatedGoal) async {
+          await onGoalUpdated?.call(updatedGoal);
+        },
+      ),
+    );
   }
 
-  void _showArchiveObligation(BuildContext context) {
+  void _showArchiveGoal(BuildContext context) {
     // TODO: Implement archive obligation logic
     Navigator.pop(context);
   }
@@ -85,9 +97,9 @@ class GoalOptionsSheet extends StatelessWidget {
                   onPressed: () => _showAddCheckpoint(context),
                 ),
                 _ActionButton(
-                  label: 'COMPLETE_OBLIGATION',
+                  label: 'COMPLETE_GOAL',
                   icon: Icons.check_circle,
-                  onPressed: () => _showCompleteObligation(context),
+                  onPressed: () => _showCompleteGoal(context),
                 ),
                 _ActionButton(
                   label: 'EDIT_PROTOCOL',
@@ -95,10 +107,10 @@ class GoalOptionsSheet extends StatelessWidget {
                   onPressed: () => _showEditProtocol(context),
                 ),
                 _ActionButton(
-                  label: 'ARCHIVE_OBLIGATION',
+                  label: 'ARCHIVE_GOAL',
                   icon: Icons.archive,
                   isDestructive: true,
-                  onPressed: () => _showArchiveObligation(context),
+                  onPressed: () => _showArchiveGoal(context),
                 ),
               ],
             ),

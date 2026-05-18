@@ -28,9 +28,11 @@ class _GoalStateConfig {
 
 class ActiveGoalCard extends StatelessWidget {
   final Goal goal;
+  final Future<void> Function(Goal)? onGoalUpdated;
 
   const ActiveGoalCard({
     required this.goal,
+    this.onGoalUpdated,
     super.key,
   });
 
@@ -124,7 +126,10 @@ class ActiveGoalCard extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
       ),
-      builder: (BuildContext context) => GoalOptionsSheet(goal: goal),
+      builder: (BuildContext context) => GoalOptionsSheet(
+        goal: goal,
+        onGoalUpdated: onGoalUpdated,
+      ),
     );
   }
 

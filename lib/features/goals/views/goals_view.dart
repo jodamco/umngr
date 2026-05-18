@@ -72,6 +72,23 @@ class _GoalsViewState extends State<GoalsView> {
     );
   }
 
+  Future<void> _handleGoalUpdated(Goal updatedGoal) async {
+    // Update goal in database
+    await _goalsDAL.updateGoal(updatedGoal);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Goal updated: ${updatedGoal.name}'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      // Refresh goals list
+      setState(() {
+        _goalsFuture = _goalsDAL.getAllGoals();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -108,6 +125,7 @@ class _GoalsViewState extends State<GoalsView> {
         return _GoalsList(
           goals: snapshot.data ?? <Goal>[],
           onCreateGoal: _showCreateGoalSheet,
+          onGoalUpdated: _handleGoalUpdated,
         );
       },
     );
@@ -118,10 +136,12 @@ class _GoalsList extends StatelessWidget {
   const _GoalsList({
     required this.goals,
     required this.onCreateGoal,
+    this.onGoalUpdated,
   });
 
   final List<Goal> goals;
   final Future<void> Function(BuildContext) onCreateGoal;
+  final Future<void> Function(Goal)? onGoalUpdated;
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +219,10 @@ class _GoalsList extends StatelessWidget {
                       .map(
                         (Goal goal) => Padding(
                           padding: const EdgeInsets.only(bottom: 24),
-                          child: ActiveGoalCard(goal: goal),
+                          child: ActiveGoalCard(
+                            goal: goal,
+                            onGoalUpdated: onGoalUpdated,
+                          ),
                         ),
                       )
                       .toList(),

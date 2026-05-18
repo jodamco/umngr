@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:url_strategy/url_strategy.dart';
 import 'package:micro_manager/core/di/service_locator.dart';
 import 'package:micro_manager/core/routing/micro_mngr_router.dart';
 import 'package:micro_manager/core/theme/micro_mngr_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Use path-based URLs instead of hash-based (#) URLs
+  setPathUrlStrategy();
 
   // Setup service locator and initialize dependencies
   await setupServiceLocator();
