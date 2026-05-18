@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:micro_manager/shared/enums.dart';
+
 /// Represents a goal stored in the database
-class Goal {
-  Goal({
+class GoalModel {
+  GoalModel({
     required this.id,
     required this.name,
     required this.category,
@@ -19,14 +21,16 @@ class Goal {
   });
 
   /// Create from database map (without checkpoints)
-  factory Goal.fromMap(Map<String, dynamic> map) {
-    return Goal(
+  factory GoalModel.fromMap(Map<String, dynamic> map) {
+    return GoalModel(
       id: map['id'] as int,
       name: map['name'] as String,
       category: map['category'] as String,
       cycle: map['cycle'] as String,
       activeDays: map['active_days'] as String?,
-      dataMetricType: map['data_metric_type'] as String,
+      dataMetricType: GoalDataMetricType.fromString(
+        map['data_metric_type'] as String,
+      ),
       occurrences: map['occurrences'] as int?,
       dayOfMonth: map['day_of_month'] as int?,
       isActive: map['is_active'] as int? ?? 1,
@@ -38,7 +42,7 @@ class Goal {
   }
 
   /// Create from goals_details view (includes checkpoints as JSON)
-  factory Goal.fromDetailsMap(Map<String, dynamic> map) {
+  factory GoalModel.fromDetailsMap(Map<String, dynamic> map) {
     List<GoalCheckpoint> checkpoints = <GoalCheckpoint>[];
 
     final dynamic checkpointsJson = map['checkpoints'];
@@ -58,13 +62,15 @@ class Goal {
       }
     }
 
-    return Goal(
+    return GoalModel(
       id: map['id'] as int,
       name: map['name'] as String,
       category: map['category'] as String,
       cycle: map['cycle'] as String,
       activeDays: map['active_days'] as String?,
-      dataMetricType: map['data_metric_type'] as String,
+      dataMetricType: GoalDataMetricType.fromString(
+        map['data_metric_type'] as String,
+      ),
       occurrences: map['occurrences'] as int?,
       dayOfMonth: map['day_of_month'] as int?,
       isActive: map['is_active'] as int? ?? 1,
@@ -80,7 +86,7 @@ class Goal {
   final String category;
   final String cycle;
   final String? activeDays;
-  final String dataMetricType;
+  final GoalDataMetricType dataMetricType;
   final int? occurrences;
   final int? dayOfMonth;
   final int isActive;
@@ -97,7 +103,7 @@ class Goal {
       'category': category,
       'cycle': cycle,
       'active_days': activeDays,
-      'data_metric_type': dataMetricType,
+      'data_metric_type': dataMetricType.name,
       'occurrences': occurrences,
       'day_of_month': dayOfMonth,
       'is_active': isActive,
@@ -113,7 +119,7 @@ class Goal {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Goal &&
+      other is GoalModel &&
           runtimeType == other.runtimeType &&
           id == other.id &&
           name == other.name &&

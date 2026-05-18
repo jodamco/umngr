@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:micro_manager/features/goals/models/goal.dart';
+import 'package:micro_manager/features/goals/models/goal_model.dart';
 import 'package:micro_manager/features/goals/models/new_goal_model.dart';
 import 'package:micro_manager/features/goals/views/widgets/checkpoints_section.dart';
 import 'package:micro_manager/features/goals/views/widgets/goal_cycle_section.dart';
 import 'package:micro_manager/features/goals/views/widgets/goal_name_section.dart';
 
 class UpdateGoalSheet extends StatefulWidget {
-  final Goal goal;
+  final GoalModel goal;
   final VoidCallback? onClose;
-  final Function(Goal)? onGoalUpdated;
+  final Function(GoalModel)? onGoalUpdated;
 
   const UpdateGoalSheet({
     required this.goal,
@@ -216,7 +216,7 @@ class _UpdateGoalSheetState extends State<UpdateGoalSheet> {
         .toList();
 
     // Create an updated Goal object
-    final Goal updatedGoal = Goal(
+    final GoalModel updatedGoal = GoalModel(
       id: widget.goal.id,
       name: goalNameController.text,
       category: widget.goal.category,
@@ -416,7 +416,7 @@ class _UpdateGoalSheetState extends State<UpdateGoalSheet> {
                         color: theme.colorScheme.surface.withValues(alpha: 0.5),
                       ),
                       child: Text(
-                        widget.goal.dataMetricType,
+                        widget.goal.dataMetricType.name,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurface.withValues(
                             alpha: 0.7,

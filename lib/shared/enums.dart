@@ -41,3 +41,46 @@ enum GoalCategory {
     );
   }
 }
+
+enum GoalDataMetricType {
+  nullSet,
+  numericVal,
+  boolFlag,
+  timeElapsed,
+  loadFactor,
+  ;
+
+  static GoalDataMetricType fromString(String value) {
+    try {
+      return GoalDataMetricType.values.byName(value);
+    } catch (e) {
+      return GoalDataMetricType.nullSet;
+    }
+  }
+
+  String get inputLabel => switch (this) {
+    GoalDataMetricType.nullSet => 'NO_DATA_REQUIRED.SYS',
+    GoalDataMetricType.numericVal => 'WHAT_IS_THE_NUMBER.SYS',
+    GoalDataMetricType.boolFlag => 'PASS_OR_FAIL.SYS',
+    GoalDataMetricType.timeElapsed => 'TIME_SPENT.SYS',
+    GoalDataMetricType.loadFactor => 'EFFORT_LEVEL.SYS',
+  };
+
+  String get inputPlaceholder => switch (this) {
+    GoalDataMetricType.nullSet => 'NO_INPUT_REQUIRED',
+    GoalDataMetricType.numericVal => 'ENTER_NUMERIC_VALUE',
+    GoalDataMetricType.boolFlag => 'YES_OR_NO',
+    GoalDataMetricType.timeElapsed => 'HH:MM:SS_OR_MINUTES',
+    GoalDataMetricType.loadFactor => '0_TO_100_PERCENT',
+  };
+
+  String get typeLabel => switch (this) {
+    GoalDataMetricType.nullSet => 'NONE',
+    GoalDataMetricType.numericVal => 'FLOAT_64',
+    GoalDataMetricType.boolFlag => 'BOOLEAN',
+    GoalDataMetricType.timeElapsed => 'TIMESPAN',
+    GoalDataMetricType.loadFactor => 'PERCENTAGE',
+  };
+
+  bool get shouldShowInput => this != GoalDataMetricType.nullSet;
+}

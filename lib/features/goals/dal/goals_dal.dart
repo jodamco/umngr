@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:micro_manager/core/services/db/db_abstraction.dart';
-import 'package:micro_manager/features/goals/models/goal.dart';
+import 'package:micro_manager/features/goals/models/goal_model.dart';
 import 'package:micro_manager/features/goals/models/new_goal_model.dart';
+import 'package:micro_manager/shared/enums.dart';
 
 /// Data Access Layer for Goals
 /// Handles all database operations related to goals
@@ -80,16 +81,16 @@ class GoalsDAL {
   }
 
   /// Get all goals with their checkpoints
-  Future<List<Goal>> getAllGoals() async {
+  Future<List<GoalModel>> getAllGoals() async {
     final List<Map<String, dynamic>> results = await _db.query(
       table: 'goals_details',
     );
-    return results.map(Goal.fromDetailsMap).toList();
+    return results.map(GoalModel.fromDetailsMap).toList();
   }
 
   /// Query goals with optional filters
   /// If no filters are provided, returns all goals
-  Future<List<Goal>> getGoals({
+  Future<List<GoalModel>> getGoals({
     int? id,
     String? category,
     int? isActive,
@@ -121,7 +122,7 @@ class GoalsDAL {
       where: where,
       whereArgs: args.isNotEmpty ? args : null,
     );
-    return results.map(Goal.fromDetailsMap).toList();
+    return results.map(GoalModel.fromDetailsMap).toList();
   }
 
   /// Delete a goal and all its related data
@@ -134,7 +135,7 @@ class GoalsDAL {
   }
 
   /// Update an existing goal with its checkpoints
-  Future<void> updateGoal(Goal goal) async {
+  Future<void> updateGoal(GoalModel goal) async {
     // Update goal data
     await _db.update(
       table: 'goals',

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:micro_manager/core/di/service_locator.dart';
 import 'package:micro_manager/core/utils/bottom_sheet_utils.dart';
 import 'package:micro_manager/features/goals/dal/goals_dal.dart';
-import 'package:micro_manager/features/goals/models/goal.dart';
+import 'package:micro_manager/features/goals/models/goal_model.dart';
 import 'package:micro_manager/features/goals/models/new_goal_model.dart';
 import 'package:micro_manager/features/goals/views/widgets/active_goal_card.dart';
 import 'package:micro_manager/features/goals/views/widgets/summary_card.dart';
@@ -19,7 +19,7 @@ class GoalsView extends StatefulWidget {
 
 class _GoalsViewState extends State<GoalsView> {
   late final GoalsDAL _goalsDAL;
-  late Future<List<Goal>> _goalsFuture;
+  late Future<List<GoalModel>> _goalsFuture;
 
   @override
   void initState() {
@@ -31,9 +31,9 @@ class _GoalsViewState extends State<GoalsView> {
 
   /// Creates a future that enforces a minimum 2-second display time
   /// for the loading state before showing the actual goals data
-  Future<List<Goal>> _createDelayedGoalsFuture() async {
+  Future<List<GoalModel>> _createDelayedGoalsFuture() async {
     final Stopwatch stopwatch = Stopwatch()..start();
-    final List<Goal> goals = await _goalsDAL.getAllGoals();
+    final List<GoalModel> goals = await _goalsDAL.getAllGoals();
 
     // Ensure at least 2 seconds have elapsed
     final int elapsedMs = stopwatch.elapsedMilliseconds;
@@ -72,7 +72,7 @@ class _GoalsViewState extends State<GoalsView> {
     );
   }
 
-  Future<void> _handleGoalUpdated(Goal updatedGoal) async {
+  Future<void> _handleGoalUpdated(GoalModel updatedGoal) async {
     // Update goal in database
     await _goalsDAL.updateGoal(updatedGoal);
     if (mounted) {
@@ -93,9 +93,9 @@ class _GoalsViewState extends State<GoalsView> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
-    return FutureBuilder<List<Goal>>(
+    return FutureBuilder<List<GoalModel>>(
       future: _goalsFuture,
-      builder: (BuildContext context, AsyncSnapshot<List<Goal>> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<List<GoalModel>> snapshot) {
         // Show loading state while waiting
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const GoalsLoadingState();
@@ -123,7 +123,7 @@ class _GoalsViewState extends State<GoalsView> {
 
         // Show normal content when data is available
         return _GoalsList(
-          goals: snapshot.data ?? <Goal>[],
+          goals: snapshot.data ?? <GoalModel>[],
           onCreateGoal: _showCreateGoalSheet,
           onGoalUpdated: _handleGoalUpdated,
         );
@@ -139,9 +139,9 @@ class _GoalsList extends StatelessWidget {
     this.onGoalUpdated,
   });
 
-  final List<Goal> goals;
+  final List<GoalModel> goals;
   final Future<void> Function(BuildContext) onCreateGoal;
-  final Future<void> Function(Goal)? onGoalUpdated;
+  final Future<void> Function(GoalModel)? onGoalUpdated;
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +217,7 @@ class _GoalsList extends StatelessWidget {
                 Column(
                   children: goals
                       .map(
-                        (Goal goal) => Padding(
+                        (GoalModel goal) => Padding(
                           padding: const EdgeInsets.only(bottom: 24),
                           child: ActiveGoalCard(
                             goal: goal,

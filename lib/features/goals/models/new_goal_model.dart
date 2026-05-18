@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:micro_manager/shared/enums.dart';
 
 enum GoalCycle {
   daily,
   weekly,
   biWeekly,
   monthly,
-}
-
-enum GoalDataMetricType {
-  nullSet,
-  numericVal,
-  boolFlag,
-  timeElapsed,
-  loadFactor,
 }
 
 class NewGoalModel {

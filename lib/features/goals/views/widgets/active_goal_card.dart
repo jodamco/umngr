@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:micro_manager/features/goals/models/goal.dart';
+import 'package:micro_manager/features/goals/models/goal_model.dart';
 import 'package:micro_manager/features/goals/views/widgets/goal_options_sheet.dart';
 import 'package:micro_manager/shared/enums.dart';
 
@@ -27,8 +27,8 @@ class _GoalStateConfig {
 }
 
 class ActiveGoalCard extends StatelessWidget {
-  final Goal goal;
-  final Future<void> Function(Goal)? onGoalUpdated;
+  final GoalModel goal;
+  final Future<void> Function(GoalModel)? onGoalUpdated;
 
   const ActiveGoalCard({
     required this.goal,

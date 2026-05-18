@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:micro_manager/features/goals/models/goal.dart';
+import 'package:micro_manager/features/checkpoint-events/models/checkpoint_event_model.dart';
+import 'package:micro_manager/features/checkpoint-events/widgets/new_checkpoint_event_dialog/new_checkpoint_event_dialog.dart';
+import 'package:micro_manager/features/goals/models/goal_model.dart';
 import 'package:micro_manager/features/goals/views/widgets/update_goal_sheet.dart';
 
 class GoalOptionsSheet extends StatelessWidget {
-  final Goal goal;
-  final Function(Goal)? onGoalUpdated;
+  final GoalModel goal;
+  final Function(GoalModel)? onGoalUpdated;
 
   const GoalOptionsSheet({
     required this.goal,
@@ -13,8 +15,25 @@ class GoalOptionsSheet extends StatelessWidget {
   });
 
   void _showAddCheckpoint(BuildContext context) {
-    // TODO: Implement add checkpoint logic
     Navigator.pop(context);
+    showDialog<AddCheckpointEvent>(
+      context: context,
+      builder: (BuildContext context) => NewCheckpointEventDialog(
+        goalId: goal.id,
+        goalName: goal.name,
+        dataMetricType: goal.dataMetricType,
+        onCheckpointSubmitted: (AddCheckpointEvent checkpoint) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Checkpoint logged: ${checkpoint.status.displayName}',
+              ),
+              backgroundColor: Colors.green.shade700,
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void _showCompleteGoal(BuildContext context) {
@@ -29,7 +48,7 @@ class GoalOptionsSheet extends StatelessWidget {
       isScrollControlled: true,
       builder: (BuildContext context) => UpdateGoalSheet(
         goal: goal,
-        onGoalUpdated: (Goal updatedGoal) async {
+        onGoalUpdated: (GoalModel updatedGoal) async {
           await onGoalUpdated?.call(updatedGoal);
         },
       ),
