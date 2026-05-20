@@ -5,34 +5,34 @@
             "name": "micro_manager (debug)",
             "type": "dart",
             "request": "launch",
-            "program": "lib/main.dart",
+            "program": "flutter_app/lib/main.dart",
             "flutterMode": "debug"
         },
         {
             "name": "micro_manager - Android Emulator",
             "type": "dart",
             "request": "launch",
-            "program": "lib/main.dart",
+            "program": "flutter_app/lib/main.dart",
             "deviceId": "emulator-5554"
         },
         {
             "name": "micro_manager - Android Physical Device",
             "type": "dart",
             "request": "launch",
-            "program": "lib/main.dart"
+            "program": "flutter_app/lib/main.dart"
         },
         {
             "name": "micro_manager - iOS Simulator",
             "type": "dart",
             "request": "launch",
-            "program": "lib/main.dart",
+            "program": "flutter_app/lib/main.dart",
             "deviceId": "iPhone 15"
         },
         {
             "name": "micro_manager - Web",
             "type": "dart",
             "request": "launch",
-            "program": "lib/main.dart",
+            "program": "flutter_app/lib/main.dart",
             "args": [
                 "-d",
                 "chrome",
@@ -45,14 +45,14 @@
             "name": "micro_manager (profile)",
             "type": "dart",
             "request": "launch",
-            "program": "lib/main.dart",
+            "program": "flutter_app/lib/main.dart",
             "flutterMode": "profile"
         },
         {
             "name": "micro_manager (release)",
             "type": "dart",
             "request": "launch",
-            "program": "lib/main.dart",
+            "program": "flutter_app/lib/main.dart",
             "flutterMode": "release"
         }
     ]

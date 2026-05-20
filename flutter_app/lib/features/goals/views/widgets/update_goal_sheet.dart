@@ -91,13 +91,12 @@ class _UpdateGoalSheetState extends State<UpdateGoalSheet> {
     };
   }
 
-  Set<int> _parseActiveDays(String? activeDaysString) {
-    if (activeDaysString == null || activeDaysString.isEmpty) {
+  Set<int> _parseActiveDays(List<String>? activeDaysList) {
+    if (activeDaysList == null || activeDaysList.isEmpty) {
       return <int>{0, 2, 4}; // Default: M, W, F
     }
     try {
-      final List<String> parts = activeDaysString.split(',');
-      return parts.map((String s) => int.parse(s.trim())).toSet();
+      return activeDaysList.map((String s) => int.parse(s.trim())).toSet();
     } catch (e) {
       return <int>{0, 2, 4};
     }
@@ -185,35 +184,32 @@ class _UpdateGoalSheetState extends State<UpdateGoalSheet> {
     });
 
     // Create updated checkpoints
-    final List<GoalCheckpoint> updatedCheckpoints = checkpointTimes
-        .asMap()
-        .entries
-        .map(
-          (MapEntry<int, TimeOfDay> entry) {
-            final String checkpointTime =
-                '${entry.value.hour.toString().padLeft(2, '0')}:${entry.value.minute.toString().padLeft(2, '0')}';
-            // Use existing checkpoint ID if available, otherwise create new
-            if (widget.goal.checkpoints.length > entry.key) {
-              final GoalCheckpoint existing = widget.goal.checkpoints[entry.key];
-              return GoalCheckpoint(
-                id: existing.id,
-                goalId: widget.goal.id,
-                checkpointTime: checkpointTime,
-                position: entry.key,
-                createdAt: existing.createdAt,
-              );
-            } else {
-              return GoalCheckpoint(
-                id: 0,
-                goalId: widget.goal.id,
-                checkpointTime: checkpointTime,
-                position: entry.key,
-                createdAt: DateTime.now(),
-              );
-            }
-          },
-        )
-        .toList();
+    final List<GoalCheckpoint>
+    updatedCheckpoints = checkpointTimes.asMap().entries.map(
+      (MapEntry<int, TimeOfDay> entry) {
+        final String checkpointTime =
+            '${entry.value.hour.toString().padLeft(2, '0')}:${entry.value.minute.toString().padLeft(2, '0')}';
+        // Use existing checkpoint ID if available, otherwise create new
+        if (widget.goal.checkpoints.length > entry.key) {
+          final GoalCheckpoint existing = widget.goal.checkpoints[entry.key];
+          return GoalCheckpoint(
+            id: existing.id,
+            goalId: widget.goal.id,
+            checkpointTime: checkpointTime,
+            position: entry.key,
+            createdAt: existing.createdAt,
+          );
+        } else {
+          return GoalCheckpoint(
+            id: 0,
+            goalId: widget.goal.id,
+            checkpointTime: checkpointTime,
+            position: entry.key,
+            createdAt: DateTime.now(),
+          );
+        }
+      },
+    ).toList();
 
     // Create an updated Goal object
     final GoalModel updatedGoal = GoalModel(
@@ -221,10 +217,14 @@ class _UpdateGoalSheetState extends State<UpdateGoalSheet> {
       name: goalNameController.text,
       category: widget.goal.category,
       cycle: selectedCycle.name,
-      activeDays: selectedDays.toList().join(','),
+      activeDays: selectedDays.map((int day) => day.toString()).toList(),
       dataMetricType: widget.goal.dataMetricType,
-      occurrences: selectedCycle == GoalCycle.daily ? occurrencesPerCycle : null,
-      dayOfMonth: selectedCycle == GoalCycle.monthly ? selectedDayOfMonth : null,
+      occurrences: selectedCycle == GoalCycle.daily
+          ? occurrencesPerCycle
+          : null,
+      dayOfMonth: selectedCycle == GoalCycle.monthly
+          ? selectedDayOfMonth
+          : null,
       isActive: widget.goal.isActive,
       createdAt: widget.goal.createdAt,
       updatedAt: DateTime.now(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:micro_manager/features/goals/models/goal_model.dart';
 import 'package:micro_manager/features/goals/views/widgets/goal_options_sheet.dart';
 import 'package:micro_manager/shared/enums.dart';
@@ -133,6 +134,10 @@ class ActiveGoalCard extends StatelessWidget {
     );
   }
 
+  void _navigateToGoalDetail(BuildContext context) {
+    context.go('/goals/details/${goal.id}');
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -142,7 +147,8 @@ class ActiveGoalCard extends StatelessWidget {
     final Color statusColor = config.color;
 
     return GestureDetector(
-      onTap: () => _showOptionsSheet(context),
+      onTap: () => _navigateToGoalDetail(context),
+      onLongPress: () => _showOptionsSheet(context),
       child: Container(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface.withValues(alpha: 0.5),

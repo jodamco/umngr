@@ -34,9 +34,14 @@ class _NewCheckpointEventDialogState extends State<NewCheckpointEventDialog> {
 
   void _goToNextStep() {
     if (_currentStep == 1 && _selectedStatus != null) {
-      setState(() {
-        _currentStep = 2;
-      });
+      // Auto-submit if status is skipped
+      if (_selectedStatus == CheckpointStatus.skipped) {
+        _submitCheckpoint();
+      } else {
+        setState(() {
+          _currentStep = 2;
+        });
+      }
     }
   }
 
@@ -103,12 +108,15 @@ class _NewCheckpointEventDialogState extends State<NewCheckpointEventDialog> {
         },
       );
     } else if (_currentStep == 2 && _selectedStatus != null) {
+      final bool allowDataInput =
+          _selectedStatus == CheckpointStatus.fulfilled;
       return CheckpointStep02View(
         goalName: widget.goalName,
         status: _selectedStatus!,
         dataMetricType: widget.dataMetricType,
         initialDataValue: _dataValue,
         initialNotes: _notes,
+        allowDataInput: allowDataInput,
         onDataChanged: (String? dataValue, String? notes) {
           setState(() {
             _dataValue = dataValue;

@@ -18,23 +18,28 @@ class CheckpointEventsDAL {
   }
 
   /// Get all checkpoint events for a specific goal
-  Future<List<Map<String, dynamic>>> getCheckpointEventsByGoal(
+  /// Returns events sorted by event_datetime in descending order (most recent first)
+  Future<List<CheckpointEventModel>> getCheckpointEventsByGoal(
     int goalId,
   ) async {
-    return await _db.query(
+    final List<Map<String, dynamic>> results = await _db.query(
       table: 'goal_events',
       where: 'goal_id = ?',
       whereArgs: <dynamic>[goalId],
+      orderBy: 'event_datetime DESC',
     );
+
+    return results.map(CheckpointEventModel.fromMap).toList();
   }
 
   /// Get checkpoint events for a goal with optional date range filter
-  Future<List<Map<String, dynamic>>> getCheckpointEventsByGoalAndDateRange(
+  /// Returns events sorted by event_datetime in descending order (most recent first)
+  Future<List<CheckpointEventModel>> getCheckpointEventsByGoalAndDateRange(
     int goalId, {
     required DateTime startDate,
     required DateTime endDate,
   }) async {
-    return await _db.query(
+    final List<Map<String, dynamic>> results = await _db.query(
       table: 'goal_events',
       where: 'goal_id = ? AND event_datetime >= ? AND event_datetime <= ?',
       whereArgs: <dynamic>[
@@ -42,7 +47,10 @@ class CheckpointEventsDAL {
         startDate.toIso8601String(),
         endDate.toIso8601String(),
       ],
+      orderBy: 'event_datetime DESC',
     );
+
+    return results.map(CheckpointEventModel.fromMap).toList();
   }
 
   /// Get the count of checkpoint events for a goal

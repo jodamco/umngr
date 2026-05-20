@@ -9,7 +9,7 @@ class GoalModel {
     required this.name,
     required this.category,
     required this.cycle,
-    this.activeDays,
+    this.activeDays = const <String>[],
     required this.dataMetricType,
     this.occurrences,
     this.dayOfMonth,
@@ -22,12 +22,24 @@ class GoalModel {
 
   /// Create from database map (without checkpoints)
   factory GoalModel.fromMap(Map<String, dynamic> map) {
+    final String? activeDaysStr = map['active_days'] as String?;
+    final List<String> activeDays = <String>[];
+    if (activeDaysStr != null && activeDaysStr.isNotEmpty) {
+      try {
+        final List<dynamic> decoded =
+            jsonDecode(activeDaysStr) as List<dynamic>;
+        activeDays.addAll(decoded.map((dynamic day) => day.toString()));
+      } catch (_) {
+        // Handle JSON parse error silently
+      }
+    }
+
     return GoalModel(
       id: map['id'] as int,
       name: map['name'] as String,
       category: map['category'] as String,
       cycle: map['cycle'] as String,
-      activeDays: map['active_days'] as String?,
+      activeDays: activeDays,
       dataMetricType: GoalDataMetricType.fromString(
         map['data_metric_type'] as String,
       ),
@@ -62,12 +74,24 @@ class GoalModel {
       }
     }
 
+    final String? activeDaysStr = map['active_days'] as String?;
+    final List<String> activeDays = <String>[];
+    if (activeDaysStr != null && activeDaysStr.isNotEmpty) {
+      try {
+        final List<dynamic> decoded =
+            jsonDecode(activeDaysStr) as List<dynamic>;
+        activeDays.addAll(decoded.map((dynamic day) => day.toString()));
+      } catch (_) {
+        // Handle JSON parse error silently
+      }
+    }
+
     return GoalModel(
       id: map['id'] as int,
       name: map['name'] as String,
       category: map['category'] as String,
       cycle: map['cycle'] as String,
-      activeDays: map['active_days'] as String?,
+      activeDays: activeDays,
       dataMetricType: GoalDataMetricType.fromString(
         map['data_metric_type'] as String,
       ),
@@ -85,7 +109,7 @@ class GoalModel {
   final String name;
   final String category;
   final String cycle;
-  final String? activeDays;
+  final List<String> activeDays;
   final GoalDataMetricType dataMetricType;
   final int? occurrences;
   final int? dayOfMonth;
@@ -102,7 +126,7 @@ class GoalModel {
       'name': name,
       'category': category,
       'cycle': cycle,
-      'active_days': activeDays,
+      'active_days': jsonEncode(activeDays),
       'data_metric_type': dataMetricType.name,
       'occurrences': occurrences,
       'day_of_month': dayOfMonth,

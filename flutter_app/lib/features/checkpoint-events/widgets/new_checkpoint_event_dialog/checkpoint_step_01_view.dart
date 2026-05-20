@@ -59,7 +59,7 @@ class _CheckpointStep01ViewState extends State<CheckpointStep01View> {
             _StatusCard(
               status: CheckpointStatus.fulfilled,
               icon: Icons.check_circle,
-              title: 'OBLIGATION_FULFILLED',
+              title: 'GOAL_FULFILLED',
               description:
                   'You actually did it. I\'m as shocked as you are. Proceed to data entry before you change your mind.',
               isSelected: _selectedStatus == CheckpointStatus.fulfilled,
@@ -75,7 +75,7 @@ class _CheckpointStep01ViewState extends State<CheckpointStep01View> {
             _StatusCard(
               status: CheckpointStatus.skipped,
               icon: Icons.skip_next,
-              title: 'OBLIGATION_SKIPPED',
+              title: 'GOAL_SKIPPED',
               description:
                   'A temporary lapse in judgment. I\'ve noted the excuse. It won\'t look good on your record.',
               isSelected: _selectedStatus == CheckpointStatus.skipped,
@@ -91,7 +91,7 @@ class _CheckpointStep01ViewState extends State<CheckpointStep01View> {
             _StatusCard(
               status: CheckpointStatus.dropped,
               icon: Icons.cancel,
-              title: 'OBLIGATION_DROPPED',
+              title: 'GOAL_DROPPED',
               description:
                   'Total surrender. I\'m adding this to the pile of things you couldn\'t handle. Farewell.',
               isSelected: _selectedStatus == CheckpointStatus.dropped,
@@ -210,6 +210,8 @@ class _StatusCardState extends State<_StatusCard> {
                 widget.icon,
                 color: widget.status == CheckpointStatus.dropped
                     ? colors.error
+                    : widget.status == CheckpointStatus.skipped
+                    ? const Color(0xFFFDD835)
                     : colors.primary,
                 size: 24.0,
               ),

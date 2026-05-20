@@ -11,6 +11,16 @@ class MicroMngrTheme {
   static const Color error = Color(0xFFCF6679);
   static const Color border = Color(0xFF4F4F4F);
 
+  // Material 3 design colors
+  static const Color primaryFixedDim = Color(0xFF38DEBB);
+  static const Color outlineVariant = Color(0xFF3C4A45);
+  static const Color surfaceContainer = Color(0xFF201F1F);
+  static const Color surfaceContainerHigh = Color(0xFF2A2A2A);
+  static const Color surfaceContainerHighest = Color(0xFF353534);
+  static const Color surfaceContainerLow = Color(0xFF1C1B1B);
+  static const Color tertiaryFixedDim = Color(0xFFDEC65A);
+  static const Color onSurfaceVariant = Color(0xFFBACACB);
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,

@@ -1,7 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:micro_manager/core/routing/routes.dart';
 
 class MicroMngrAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const MicroMngrAppBar({super.key});
+  final String title;
+  final bool showBackButton;
+
+  const MicroMngrAppBar({
+    required this.title,
+    this.showBackButton = false,
+    super.key,
+  });
+
+  void _onBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    return context.go(Routes.goals);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,6 +28,12 @@ class MicroMngrAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: theme.scaffoldBackgroundColor,
       scrolledUnderElevation: 0.0,
+      leading: showBackButton
+          ? IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => _onBack(context),
+            )
+          : null,
       title: Row(
         children: <Widget>[
           Icon(
@@ -20,7 +44,7 @@ class MicroMngrAppBar extends StatelessWidget implements PreferredSizeWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'µMNGR: OH, YOU\'RE BACK.',
+              title,
               style: theme.textTheme.headlineMedium?.copyWith(
                 color: theme.colorScheme.onSurface,
                 fontSize: 16,

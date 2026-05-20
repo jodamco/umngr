@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:micro_manager/core/services/db/db_abstraction.dart';
 import 'package:micro_manager/features/goals/models/goal_model.dart';
@@ -52,7 +54,7 @@ class GoalsDAL {
         'name': name,
         'category': category,
         'cycle': cycle.toString().split('.').last,
-        'active_days': activeDays?.toString(),
+        'active_days': activeDays != null ? jsonEncode(activeDays) : null,
         'data_metric_type': dataMetricType.toString().split('.').last,
         'occurrences': occurrences,
         'day_of_month': dayOfMonth,
@@ -91,26 +93,20 @@ class GoalsDAL {
   /// Query goals with optional filters
   /// If no filters are provided, returns all goals
   Future<List<GoalModel>> getGoals({
-    int? id,
     String? category,
     int? isActive,
   }) async {
     final List<String> conditions = <String>[];
     final List<dynamic> args = <dynamic>[];
 
-    if (id != null) {
-      conditions.add('id = ?');
-      args.add(id);
-    } else {
-      if (category != null) {
-        conditions.add('category = ?');
-        args.add(category);
-      }
+    if (category != null) {
+      conditions.add('category = ?');
+      args.add(category);
+    }
 
-      if (isActive != null) {
-        conditions.add('is_active = ?');
-        args.add(isActive);
-      }
+    if (isActive != null) {
+      conditions.add('is_active = ?');
+      args.add(isActive);
     }
 
     final String? where = conditions.isNotEmpty
@@ -125,6 +121,30 @@ class GoalsDAL {
     return results.map(GoalModel.fromDetailsMap).toList();
   }
 
+  Future<GoalModel> getGoalById({required int id}) async {
+    final List<String> conditions = <String>[];
+    final List<dynamic> args = <dynamic>[];
+
+    conditions.add('id = ?');
+    args.add(id);
+
+    final String? where = conditions.isNotEmpty
+        ? conditions.join(' AND ')
+        : null;
+
+    final List<Map<String, dynamic>> results = await _db.query(
+      table: 'goals_details',
+      where: where,
+      whereArgs: args.isNotEmpty ? args : null,
+    );
+
+    if (results.isEmpty) {
+      throw Exception('Goal with id $id not found');
+    }
+
+    return results.map(GoalModel.fromDetailsMap).toList().first;
+  }
+
   /// Delete a goal and all its related data
   Future<int> deleteGoal(int goalId) async {
     return await _db.delete(
@@ -136,20 +156,14 @@ class GoalsDAL {
 
   /// Update an existing goal with its checkpoints
   Future<void> updateGoal(GoalModel goal) async {
-    // Update goal data
+    // Update goal data using the model's toMap method
+    final Map<String, dynamic> goalData = goal.toMap();
+    goalData['updated_at'] = DateTime.now().toIso8601String();
+    goalData.remove('id'); // Don't update the ID field
+
     await _db.update(
       table: 'goals',
-      values: <String, dynamic>{
-        'name': goal.name,
-        'category': goal.category,
-        'cycle': goal.cycle,
-        'active_days': goal.activeDays,
-        'data_metric_type': goal.dataMetricType,
-        'occurrences': goal.occurrences,
-        'day_of_month': goal.dayOfMonth,
-        'is_active': goal.isActive,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
+      values: goalData,
       where: 'id = ?',
       whereArgs: <dynamic>[goal.id],
     );

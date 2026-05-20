@@ -11,6 +11,7 @@ class CheckpointStep02View extends StatefulWidget {
   final Function(String?, String?)? onDataChanged; // (dataValue, notes)
   final String? initialDataValue;
   final String? initialNotes;
+  final bool allowDataInput;
 
   const CheckpointStep02View({
     required this.goalName,
@@ -19,6 +20,7 @@ class CheckpointStep02View extends StatefulWidget {
     this.onDataChanged,
     this.initialDataValue,
     this.initialNotes,
+    this.allowDataInput = true,
     super.key,
   });
 
@@ -34,7 +36,7 @@ class _CheckpointStep02ViewState extends State<CheckpointStep02View> {
 
   // Expose validation state for parent components
   bool get isFormValid {
-    if (!widget.dataMetricType.shouldShowInput) {
+    if (!widget.dataMetricType.shouldShowInput || !widget.allowDataInput) {
       return true;
     }
     switch (widget.dataMetricType) {
@@ -165,7 +167,8 @@ class _CheckpointStep02ViewState extends State<CheckpointStep02View> {
           showLeftBorder: true,
         ),
         // Data Input Section (if applicable)
-        if (widget.dataMetricType.shouldShowInput) ...<Widget>[
+        if (widget.dataMetricType.shouldShowInput &&
+            widget.allowDataInput) ...<Widget>[
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -280,6 +283,7 @@ class _CheckpointStep02ViewState extends State<CheckpointStep02View> {
                   ),
                   child: TextField(
                     controller: _dataValueController,
+                    maxLength: 20,
                     keyboardType: _getKeyboardType(),
                     inputFormatters: _getInputFormatters(),
                     style: textTheme.labelSmall?.copyWith(
@@ -369,6 +373,7 @@ class _CheckpointStep02ViewState extends State<CheckpointStep02View> {
               ),
               child: TextField(
                 controller: _notesController,
+                maxLength: 200,
                 maxLines: 6,
                 minLines: 4,
                 style: textTheme.bodyMedium?.copyWith(
