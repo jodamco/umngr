@@ -53,27 +53,11 @@ class GoalModel {
     );
   }
 
-  /// Create from goals_details view (includes checkpoints as JSON)
-  factory GoalModel.fromDetailsMap(Map<String, dynamic> map) {
-    List<GoalCheckpoint> checkpoints = <GoalCheckpoint>[];
-
-    final dynamic checkpointsJson = map['checkpoints'];
-    if (checkpointsJson != null && checkpointsJson.toString().isNotEmpty) {
-      try {
-        final List<dynamic> decoded =
-            jsonDecode(checkpointsJson as String) as List<dynamic>;
-        checkpoints = decoded
-            .map(
-              (dynamic cp) =>
-                  GoalCheckpoint.fromMap(cp as Map<String, dynamic>),
-            )
-            .toList();
-      } catch (e) {
-        // Handle JSON parse error silently
-        // print('Error parsing checkpoints: $e');
-      }
-    }
-
+  /// Create from goals_details view with separately fetched checkpoints
+  factory GoalModel.fromDetailsMap(
+    Map<String, dynamic> map, {
+    List<GoalCheckpoint> checkpoints = const <GoalCheckpoint>[],
+  }) {
     final String? activeDaysStr = map['active_days'] as String?;
     final List<String> activeDays = <String>[];
     if (activeDaysStr != null && activeDaysStr.isNotEmpty) {

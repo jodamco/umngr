@@ -41,4 +41,25 @@ class NotificationsDAL {
     table: _table,
     values: <String, dynamic>{'is_cancelled': 1},
   );
+
+  /// Returns all non-cancelled notifications with the given [foreignId].
+  /// When [from] is provided, only notifications scheduled after that instant
+  /// are returned (useful for counting upcoming notifications).
+  Future<List<NotificationModel>> getActiveNotificationsForForeignId(
+    int foreignId, {
+    DateTime? from,
+  }) async {
+    final bool hasFrom = from != null;
+    final List<Map<String, dynamic>> maps = await _db.query(
+      table: _table,
+      where: hasFrom
+          ? 'foreign_id = ? AND is_cancelled = 0 AND scheduled_at > ?'
+          : 'foreign_id = ? AND is_cancelled = 0',
+      whereArgs: hasFrom
+          ? <dynamic>[foreignId, from.toIso8601String()]
+          : <dynamic>[foreignId],
+      orderBy: 'scheduled_at ASC',
+    );
+    return maps.map(NotificationModel.fromMap).toList();
+  }
 }

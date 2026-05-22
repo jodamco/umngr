@@ -16,12 +16,14 @@ class NotificationsBLL {
     required String title,
     required String body,
     required DateTime scheduledAt,
+    int? foreignId,
     Map<String, dynamic>? payload,
   }) async {
     final int id = await _dal.createNotification(
       NewNotificationModel(
         title: title,
         body: body,
+        foreignId: foreignId,
         payload: payload,
         scheduledAt: scheduledAt,
       ),

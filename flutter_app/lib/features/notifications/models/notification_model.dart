@@ -8,12 +8,14 @@ class NotificationModel {
     required this.scheduledAt,
     required this.isCancelled,
     required this.createdAt,
+    this.foreignId,
     this.payload,
   });
 
   factory NotificationModel.fromMap(Map<String, dynamic> map) {
     return NotificationModel(
       id: map['id'] as int,
+      foreignId: map['foreign_id'] as int?,
       title: map['title'] as String,
       body: map['body'] as String,
       scheduledAt: DateTime.parse(map['scheduled_at'] as String),
@@ -26,6 +28,7 @@ class NotificationModel {
   }
 
   final int id;
+  final int? foreignId;
   final String title;
   final String body;
   final DateTime scheduledAt;
@@ -35,6 +38,7 @@ class NotificationModel {
 
   Map<String, dynamic> toMap() => <String, dynamic>{
     'id': id,
+    'foreign_id': foreignId,
     'title': title,
     'body': body,
     'payload': payload != null ? jsonEncode(payload) : null,
@@ -49,15 +53,18 @@ class NewNotificationModel {
     required this.title,
     required this.body,
     required this.scheduledAt,
+    this.foreignId,
     this.payload,
   });
 
   final String title;
   final String body;
   final DateTime scheduledAt;
+  final int? foreignId;
   final Map<String, dynamic>? payload;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
+    'foreign_id': foreignId,
     'title': title,
     'body': body,
     'scheduled_at': scheduledAt.toIso8601String(),

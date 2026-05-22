@@ -108,8 +108,7 @@ class _NewCheckpointEventDialogState extends State<NewCheckpointEventDialog> {
         },
       );
     } else if (_currentStep == 2 && _selectedStatus != null) {
-      final bool allowDataInput =
-          _selectedStatus == CheckpointStatus.fulfilled;
+      final bool allowDataInput = _selectedStatus == CheckpointStatus.fulfilled;
       return CheckpointStep02View(
         goalName: widget.goalName,
         status: _selectedStatus!,
@@ -136,179 +135,199 @@ class _NewCheckpointEventDialogState extends State<NewCheckpointEventDialog> {
     final TextTheme textTheme = theme.textTheme;
 
     return Dialog.fullscreen(
-      child: Column(
-        children: <Widget>[
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: colors.outlineVariant,
-                  width: 1.0,
-                ),
-              ),
-              color: colors.surface,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(
-                  'CHECKPOINT_SUBMISSION',
-                  style: textTheme.titleMedium?.copyWith(
-                    color: colors.onSurface,
-                    letterSpacing: 0.05,
+      child: GestureDetector(
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        child: Column(
+          children: <Widget>[
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: colors.outlineVariant,
+                    width: 1.0,
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.close, color: colors.onSurface),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          ),
-          // Scrollable Content
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(
-                top: 0.0,
-                left: 16.0,
-                right: 16.0,
-                bottom: 24.0,
+                color: colors.surface,
               ),
-              child: _buildCurrentStep(),
-            ),
-          ),
-          // Bottom Actions
-          Container(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: colors.outlineVariant,
-                  width: 1.0,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    'CHECKPOINT_SUBMISSION',
+                    style: textTheme.titleMedium?.copyWith(
+                      color: colors.onSurface,
+                      letterSpacing: 0.05,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close, color: colors.onSurface),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
               ),
-              color: colors.surface,
             ),
-            padding: EdgeInsets.fromLTRB(
-              24.0,
-              16.0,
-              24.0,
-              16.0 + MediaQuery.of(context).padding.bottom,
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  top: 0.0,
+                  left: 16.0,
+                  right: 16.0,
+                  bottom: 24.0,
+                ),
+                child: _buildCurrentStep(),
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                // Back Button
-                if (_currentStep == 2)
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _goToPreviousStep,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.primary,
-                        foregroundColor: colors.onPrimary,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 16.0,
-                          horizontal: 24.0,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        elevation: 8,
-                        shadowColor: colors.primaryContainer.withValues(
-                          alpha: 0.1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Icon(
-                            Icons.arrow_back,
-                            size: 20.0,
-                            color: colors.onPrimary,
+            // Bottom Actions
+            Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: colors.outlineVariant,
+                    width: 1.0,
+                  ),
+                ),
+                color: colors.surface,
+              ),
+              padding: EdgeInsets.fromLTRB(
+                24.0,
+                16.0,
+                24.0,
+                16.0 + MediaQuery.of(context).padding.bottom,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  // Back Button
+                  if (_currentStep == 2)
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _goToPreviousStep,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.primary,
+                          foregroundColor: colors.onPrimary,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16.0,
+                            horizontal: 24.0,
                           ),
-                          Text(
-                            'BACK',
-                            style: textTheme.headlineSmall?.copyWith(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          elevation: 8,
+                          shadowColor: colors.primaryContainer.withValues(
+                            alpha: 0.1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(
+                              Icons.arrow_back,
+                              size: 20.0,
                               color: colors.onPrimary,
                             ),
-                          ),
-                          const SizedBox(width: 20.0),
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  const Spacer(),
-                if (_currentStep == 2)
-                  const SizedBox(width: 12.0)
-                else
-                  const SizedBox.shrink(),
-                const Spacer(),
-                // Next or Submit Button
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isSubmitting
-                        ? null
-                        : (_currentStep == 1 && _selectedStatus != null
-                              ? _goToNextStep
-                              : (_currentStep == 2 && _selectedStatus != null)
-                              ? _submitCheckpoint
-                              : null),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          (_currentStep == 1 && _selectedStatus == null) ||
-                              (_currentStep == 2 && _selectedStatus == null)
-                          ? colors.outlineVariant.withValues(alpha: 0.3)
-                          : colors.primary,
-                      foregroundColor:
-                          (_currentStep == 1 && _selectedStatus == null) ||
-                              (_currentStep == 2 && _selectedStatus == null)
-                          ? colors.onSurfaceVariant
-                          : colors.onPrimary,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16.0,
-                        horizontal: 24.0,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                      elevation:
-                          (_currentStep == 1 && _selectedStatus == null) ||
-                              (_currentStep == 2 && _selectedStatus == null)
-                          ? 0
-                          : 8,
-                      shadowColor: colors.primaryContainer.withValues(
-                        alpha: 0.1,
-                      ),
-                    ),
-                    child: Builder(
-                      builder: (BuildContext context) {
-                        if (_isSubmitting) {
-                          return SizedBox(
-                            height: 20.0,
-                            width: 20.0,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                colors.onPrimary,
-                              ),
-                              strokeWidth: 2.0,
-                            ),
-                          );
-                        }
-
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
+                            const SizedBox(width: 8.0),
                             Text(
-                              _currentStep == 1 ? 'NEXT' : 'SUBMIT',
+                              'BACK',
                               style: textTheme.headlineSmall?.copyWith(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 0.8,
+                                color: colors.onPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    const Spacer(),
+                  if (_currentStep == 2)
+                    const SizedBox(width: 12.0)
+                  else
+                    const SizedBox.shrink(),
+                  const Spacer(),
+                  // Next or Submit Button
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting
+                          ? null
+                          : (_currentStep == 1 && _selectedStatus != null
+                                ? _goToNextStep
+                                : (_currentStep == 2 && _selectedStatus != null)
+                                ? _submitCheckpoint
+                                : null),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            (_currentStep == 1 && _selectedStatus == null) ||
+                                (_currentStep == 2 && _selectedStatus == null)
+                            ? colors.outlineVariant.withValues(alpha: 0.3)
+                            : colors.primary,
+                        foregroundColor:
+                            (_currentStep == 1 && _selectedStatus == null) ||
+                                (_currentStep == 2 && _selectedStatus == null)
+                            ? colors.onSurfaceVariant
+                            : colors.onPrimary,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12.0,
+                          horizontal: 12.0,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                        elevation:
+                            (_currentStep == 1 && _selectedStatus == null) ||
+                                (_currentStep == 2 && _selectedStatus == null)
+                            ? 0
+                            : 8,
+                        shadowColor: colors.primaryContainer.withValues(
+                          alpha: 0.1,
+                        ),
+                      ),
+                      child: Builder(
+                        builder: (BuildContext context) {
+                          if (_isSubmitting) {
+                            return SizedBox(
+                              height: 20.0,
+                              width: 20.0,
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  colors.onPrimary,
+                                ),
+                                strokeWidth: 2.0,
+                              ),
+                            );
+                          }
+
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text(
+                                _currentStep == 1 ? 'NEXT' : 'SUBMIT',
+                                style: textTheme.headlineSmall?.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.8,
+                                  color:
+                                      (_currentStep == 1 &&
+                                              _selectedStatus == null) ||
+                                          (_currentStep == 2 &&
+                                              _selectedStatus == null)
+                                      ? colors.onSurfaceVariant
+                                      : colors.onPrimary,
+                                ),
+                              ),
+                              const SizedBox(width: 8.0),
+                              Icon(
+                                _currentStep == 1
+                                    ? Icons.arrow_forward
+                                    : Icons.check_circle_outline,
+                                size: 20.0,
                                 color:
                                     (_currentStep == 1 &&
                                             _selectedStatus == null) ||
@@ -317,30 +336,17 @@ class _NewCheckpointEventDialogState extends State<NewCheckpointEventDialog> {
                                     ? colors.onSurfaceVariant
                                     : colors.onPrimary,
                               ),
-                            ),
-                            Icon(
-                              _currentStep == 1
-                                  ? Icons.arrow_forward
-                                  : Icons.check_circle_outline,
-                              size: 20.0,
-                              color:
-                                  (_currentStep == 1 &&
-                                          _selectedStatus == null) ||
-                                      (_currentStep == 2 &&
-                                          _selectedStatus == null)
-                                  ? colors.onSurfaceVariant
-                                  : colors.onPrimary,
-                            ),
-                          ],
-                        );
-                      },
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

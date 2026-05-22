@@ -87,22 +87,8 @@ Future<void> createDatabaseFromSchema(Database db) async {
       COALESCE(
         (SELECT COUNT(*) FROM goal_events WHERE goal_id = g.id),
         0
-      ) as event_count,
-      COALESCE(
-        json_group_array(
-          json_object(
-            'id', gc.id,
-            'goal_id', gc.goal_id,
-            'checkpoint_time', gc.checkpoint_time,
-            'position', gc.position,
-            'created_at', gc.created_at
-          )
-        ),
-        json_array()
-      ) as checkpoints
+      ) as event_count
     FROM goals g
-    LEFT JOIN goal_checkpoints gc ON g.id = gc.goal_id
-    GROUP BY g.id
   ''');
 
   // Create notifications table
@@ -114,6 +100,7 @@ Future<void> createNotificationsTable(Database db) async {
   await db.execute('''
     CREATE TABLE IF NOT EXISTS notifications (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      foreign_id INTEGER,
       title TEXT NOT NULL,
       body TEXT NOT NULL,
       payload TEXT,
@@ -126,5 +113,10 @@ Future<void> createNotificationsTable(Database db) async {
   await db.execute('''
     CREATE INDEX IF NOT EXISTS idx_notifications_scheduled_at
     ON notifications(scheduled_at)
+  ''');
+
+  await db.execute('''
+    CREATE INDEX IF NOT EXISTS idx_notifications_foreign_id
+    ON notifications(foreign_id)
   ''');
 }

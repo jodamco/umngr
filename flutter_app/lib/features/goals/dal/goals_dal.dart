@@ -87,7 +87,7 @@ class GoalsDAL {
     final List<Map<String, dynamic>> results = await _db.query(
       table: 'goals_details',
     );
-    return results.map(GoalModel.fromDetailsMap).toList();
+    return _hydrateGoalsWithCheckpoints(results);
   }
 
   /// Query goals with optional filters
@@ -118,7 +118,7 @@ class GoalsDAL {
       where: where,
       whereArgs: args.isNotEmpty ? args : null,
     );
-    return results.map(GoalModel.fromDetailsMap).toList();
+    return _hydrateGoalsWithCheckpoints(results);
   }
 
   Future<GoalModel> getGoalById({required int id}) async {
@@ -142,7 +142,50 @@ class GoalsDAL {
       throw Exception('Goal with id $id not found');
     }
 
-    return results.map(GoalModel.fromDetailsMap).toList().first;
+    final List<GoalModel> goals = await _hydrateGoalsWithCheckpoints(results);
+    return goals.first;
+  }
+
+  /// Helper: Fetch checkpoints for multiple goals and combine with goal data
+  Future<List<GoalModel>> _hydrateGoalsWithCheckpoints(
+    List<Map<String, dynamic>> goalMaps,
+  ) async {
+    if (goalMaps.isEmpty) {
+      return <GoalModel>[];
+    }
+
+    // Collect all goal IDs
+    final List<int> goalIds =
+        goalMaps.map((Map<String, dynamic> m) => m['id'] as int).toList();
+
+    // Fetch all checkpoints in one query using IN clause
+    final List<Map<String, dynamic>> checkpointMaps =
+        await _db.query(
+      table: 'goal_checkpoints',
+      where: 'goal_id IN (${List<String>.filled(goalIds.length, '?').join(', ')})',
+      whereArgs: goalIds,
+      orderBy: 'position ASC',
+    );
+
+    // Map checkpoints by goal ID for easy lookup
+    final Map<int, List<GoalCheckpoint>> checkpointsByGoal =
+        <int, List<GoalCheckpoint>>{};
+    for (final Map<String, dynamic> cpMap in checkpointMaps) {
+      final int goalId = cpMap['goal_id'] as int;
+      checkpointsByGoal.putIfAbsent(goalId, () => <GoalCheckpoint>[]);
+      checkpointsByGoal[goalId]!.add(GoalCheckpoint.fromMap(cpMap));
+    }
+
+    // Build GoalModels with their checkpoints
+    return goalMaps.map((Map<String, dynamic> goalMap) {
+      final int goalId = goalMap['id'] as int;
+      final List<GoalCheckpoint> checkpoints =
+          checkpointsByGoal[goalId] ?? <GoalCheckpoint>[];
+      return GoalModel.fromDetailsMap(
+        goalMap,
+        checkpoints: checkpoints,
+      );
+    }).toList();
   }
 
   /// Delete a goal and all its related data

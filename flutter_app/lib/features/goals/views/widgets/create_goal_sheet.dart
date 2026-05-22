@@ -206,119 +206,124 @@ class _CreateGoalSheetState extends State<CreateGoalSheet> {
 
           // Scrollable Content
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 24,
-                children: <Widget>[
-                  // Section 1: Goal Name
-                  GoalNameSection(
-                    theme: theme,
-                    controller: goalNameController,
-                    buildSection: _buildSection,
-                    sectionTitle: 'NEW GOAL NAME',
-                  ),
-                  if (goalNameError != null)
-                    Text(
-                      goalNameError!,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.error,
-                        fontSize: 12,
+            child: GestureDetector(
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 24,
+                  children: <Widget>[
+                    // Section 1: Goal Name
+                    GoalNameSection(
+                      theme: theme,
+                      controller: goalNameController,
+                      buildSection: _buildSection,
+                      sectionTitle: 'NEW GOAL NAME',
+                    ),
+                    if (goalNameError != null)
+                      Text(
+                        goalNameError!,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.error,
+                          fontSize: 12,
+                        ),
                       ),
+
+                    // Section 2: Category
+                    _CategorySection(
+                      theme: theme,
+                      selectedCategory: selectedCategory,
+                      onCategoryChanged: (GoalCategory value) {
+                        setState(() {
+                          selectedCategory = value;
+                        });
+                      },
+                      buildSection: _buildSection,
                     ),
 
-                  // Section 2: Category
-                  _CategorySection(
-                    theme: theme,
-                    selectedCategory: selectedCategory,
-                    onCategoryChanged: (GoalCategory value) {
-                      setState(() {
-                        selectedCategory = value;
-                      });
-                    },
-                    buildSection: _buildSection,
-                  ),
-
-                  // Section 4: Goal Cycle
-                  GoalCycleSection(
-                    theme: theme,
-                    selectedCycle: selectedCycle,
-                    selectedDays: selectedDays,
-                    dayLabels: dayLabels,
-                    selectedDayOfMonth: selectedDayOfMonth,
-                    dayOfMonthController: dayOfMonthController,
-                    occurrencesPerCycle: occurrencesPerCycle,
-                    onCycleChanged: (GoalCycle value) {
-                      setState(() {
-                        selectedCycle = value;
-                      });
-                    },
-                    onDayToggled: _toggleDay,
-                    onDayOfMonthChanged: (int value) {
-                      setState(() {
-                        selectedDayOfMonth = value;
-                      });
-                    },
-                    onOccurrencesChanged: (int value) {
-                      setState(() {
-                        occurrencesPerCycle = value;
-                      });
-                    },
-                    buildSection: _buildSection,
-                  ),
-                  if (daysError != null)
-                    Text(
-                      daysError!,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.error,
-                        fontSize: 12,
+                    // Section 4: Goal Cycle
+                    GoalCycleSection(
+                      theme: theme,
+                      selectedCycle: selectedCycle,
+                      selectedDays: selectedDays,
+                      dayLabels: dayLabels,
+                      selectedDayOfMonth: selectedDayOfMonth,
+                      dayOfMonthController: dayOfMonthController,
+                      occurrencesPerCycle: occurrencesPerCycle,
+                      onCycleChanged: (GoalCycle value) {
+                        setState(() {
+                          selectedCycle = value;
+                        });
+                      },
+                      onDayToggled: _toggleDay,
+                      onDayOfMonthChanged: (int value) {
+                        setState(() {
+                          selectedDayOfMonth = value;
+                        });
+                      },
+                      onOccurrencesChanged: (int value) {
+                        setState(() {
+                          occurrencesPerCycle = value;
+                        });
+                      },
+                      buildSection: _buildSection,
+                    ),
+                    if (daysError != null)
+                      Text(
+                        daysError!,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.error,
+                          fontSize: 12,
+                        ),
                       ),
+
+                    // Section 5: Checkpoints
+                    CheckpointsSection(
+                      theme: theme,
+                      context: context,
+                      checkpointTimes: checkpointTimes,
+                      onTimeSelected: _selectTime,
+                      onCheckpointRemoved: _removeCheckpoint,
+                      onCheckpointAdded: _addCheckpoint,
+                      buildSection: _buildSection,
+                    ),
+                    if (checkpointsError != null)
+                      Text(
+                        checkpointsError!,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.error,
+                          fontSize: 12,
+                        ),
+                      ),
+
+                    // Data Logging Protocol
+                    _DataLoggingProtocolSection(
+                      theme: theme,
+                      selectedProtocol: selectedProtocol,
+                      onProtocolChanged: (GoalDataMetricType value) {
+                        setState(() {
+                          selectedProtocol = value;
+                        });
+                      },
+                      buildSection: _buildSection,
                     ),
 
-                  // Section 5: Checkpoints
-                  CheckpointsSection(
-                    theme: theme,
-                    context: context,
-                    checkpointTimes: checkpointTimes,
-                    onTimeSelected: _selectTime,
-                    onCheckpointRemoved: _removeCheckpoint,
-                    onCheckpointAdded: _addCheckpoint,
-                    buildSection: _buildSection,
-                  ),
-                  if (checkpointsError != null)
-                    Text(
-                      checkpointsError!,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.error,
-                        fontSize: 12,
-                      ),
+                    // Goal Intensity Visualization
+                    _GoalIntensitySection(
+                      theme: theme,
+                      selectedCycle: selectedCycle,
+                      selectedDays: selectedDays,
+                      selectedDayOfMonth: selectedDayOfMonth,
+                      checkpointTimes: checkpointTimes,
                     ),
 
-                  // Data Logging Protocol
-                  _DataLoggingProtocolSection(
-                    theme: theme,
-                    selectedProtocol: selectedProtocol,
-                    onProtocolChanged: (GoalDataMetricType value) {
-                      setState(() {
-                        selectedProtocol = value;
-                      });
-                    },
-                    buildSection: _buildSection,
-                  ),
-
-                  // Goal Intensity Visualization
-                  _GoalIntensitySection(
-                    theme: theme,
-                    selectedCycle: selectedCycle,
-                    selectedDays: selectedDays,
-                    selectedDayOfMonth: selectedDayOfMonth,
-                    checkpointTimes: checkpointTimes,
-                  ),
-
-                  // Bottom spacing for fixed button
-                  const SizedBox(height: 80),
-                ],
+                    // Bottom spacing for fixed button
+                    const SizedBox(height: 80),
+                  ],
+                ),
               ),
             ),
           ),

@@ -293,142 +293,151 @@ class _UpdateGoalSheetState extends State<UpdateGoalSheet> {
 
           // Scrollable Content
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 24,
-                children: <Widget>[
-                  // Section 1: Goal Name
-                  GoalNameSection(
-                    theme: theme,
-                    controller: goalNameController,
-                    buildSection: _buildSection,
-                    sectionTitle: 'GOAL NAME',
-                  ),
-                  if (goalNameError != null)
-                    Text(
-                      goalNameError!,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.error,
-                        fontSize: 12,
-                      ),
+            child: GestureDetector(
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 24,
+                  children: <Widget>[
+                    // Section 1: Goal Name
+                    GoalNameSection(
+                      theme: theme,
+                      controller: goalNameController,
+                      buildSection: _buildSection,
+                      sectionTitle: 'GOAL NAME',
                     ),
-
-                  // Section 2: Category (Read-only)
-                  _buildSection(
-                    title: 'CATEGORY (READ-ONLY)',
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: theme.colorScheme.outline.withValues(
-                            alpha: 0.3,
-                          ),
-                        ),
-                        borderRadius: BorderRadius.circular(4),
-                        color: theme.colorScheme.surface.withValues(alpha: 0.5),
-                      ),
-                      child: Text(
-                        widget.goal.category,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.7,
-                          ),
+                    if (goalNameError != null)
+                      Text(
+                        goalNameError!,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.error,
+                          fontSize: 12,
                         ),
                       ),
-                    ),
-                  ),
 
-                  // Section 3: Goal Cycle
-                  GoalCycleSection(
-                    theme: theme,
-                    selectedCycle: selectedCycle,
-                    selectedDays: selectedDays,
-                    dayLabels: dayLabels,
-                    selectedDayOfMonth: selectedDayOfMonth,
-                    dayOfMonthController: dayOfMonthController,
-                    occurrencesPerCycle: occurrencesPerCycle,
-                    onCycleChanged: (GoalCycle value) {
-                      setState(() {
-                        selectedCycle = value;
-                      });
-                    },
-                    onDayToggled: _toggleDay,
-                    onDayOfMonthChanged: (int value) {
-                      setState(() {
-                        selectedDayOfMonth = value;
-                      });
-                    },
-                    onOccurrencesChanged: (int value) {
-                      setState(() {
-                        occurrencesPerCycle = value;
-                      });
-                    },
-                    buildSection: _buildSection,
-                  ),
-                  if (daysError != null)
-                    Text(
-                      daysError!,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.error,
-                        fontSize: 12,
-                      ),
-                    ),
-
-                  // Section 4: Checkpoints
-                  CheckpointsSection(
-                    theme: theme,
-                    context: context,
-                    checkpointTimes: checkpointTimes,
-                    onTimeSelected: _selectTime,
-                    onCheckpointRemoved: _removeCheckpoint,
-                    onCheckpointAdded: _addCheckpoint,
-                    buildSection: _buildSection,
-                  ),
-                  if (checkpointsError != null)
-                    Text(
-                      checkpointsError!,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.error,
-                        fontSize: 12,
-                      ),
-                    ),
-
-                  // Section 5: Data Logging Protocol (Read-only)
-                  _buildSection(
-                    title: 'DATA LOGGING PROTOCOL (READ-ONLY)',
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: theme.colorScheme.outline.withValues(
-                            alpha: 0.3,
+                    // Section 2: Category (Read-only)
+                    _buildSection(
+                      title: 'CATEGORY (READ-ONLY)',
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                          color: theme.colorScheme.surface.withValues(
+                            alpha: 0.5,
                           ),
                         ),
-                        borderRadius: BorderRadius.circular(4),
-                        color: theme.colorScheme.surface.withValues(alpha: 0.5),
-                      ),
-                      child: Text(
-                        widget.goal.dataMetricType.name,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.7,
+                        child: Text(
+                          widget.goal.category,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // Bottom spacing for fixed button
-                  const SizedBox(height: 80),
-                ],
+                    // Section 3: Goal Cycle
+                    GoalCycleSection(
+                      theme: theme,
+                      selectedCycle: selectedCycle,
+                      selectedDays: selectedDays,
+                      dayLabels: dayLabels,
+                      selectedDayOfMonth: selectedDayOfMonth,
+                      dayOfMonthController: dayOfMonthController,
+                      occurrencesPerCycle: occurrencesPerCycle,
+                      onCycleChanged: (GoalCycle value) {
+                        setState(() {
+                          selectedCycle = value;
+                        });
+                      },
+                      onDayToggled: _toggleDay,
+                      onDayOfMonthChanged: (int value) {
+                        setState(() {
+                          selectedDayOfMonth = value;
+                        });
+                      },
+                      onOccurrencesChanged: (int value) {
+                        setState(() {
+                          occurrencesPerCycle = value;
+                        });
+                      },
+                      buildSection: _buildSection,
+                    ),
+                    if (daysError != null)
+                      Text(
+                        daysError!,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.error,
+                          fontSize: 12,
+                        ),
+                      ),
+
+                    // Section 4: Checkpoints
+                    CheckpointsSection(
+                      theme: theme,
+                      context: context,
+                      checkpointTimes: checkpointTimes,
+                      onTimeSelected: _selectTime,
+                      onCheckpointRemoved: _removeCheckpoint,
+                      onCheckpointAdded: _addCheckpoint,
+                      buildSection: _buildSection,
+                    ),
+                    if (checkpointsError != null)
+                      Text(
+                        checkpointsError!,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.error,
+                          fontSize: 12,
+                        ),
+                      ),
+
+                    // Section 5: Data Logging Protocol (Read-only)
+                    _buildSection(
+                      title: 'DATA LOGGING PROTOCOL (READ-ONLY)',
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                          color: theme.colorScheme.surface.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                        child: Text(
+                          widget.goal.dataMetricType.name,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Bottom spacing for fixed button
+                    const SizedBox(height: 80),
+                  ],
+                ),
               ),
             ),
           ),

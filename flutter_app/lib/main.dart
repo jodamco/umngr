@@ -10,15 +10,15 @@ import 'package:micro_manager/core/theme/micro_mngr_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Use path-based URLs instead of hash-based (#) URLs
   setPathUrlStrategy();
 
   // Initialize timezone database and set local timezone
   tz.initializeTimeZones();
   if (!kIsWeb) {
-    final String localTimezone = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(localTimezone));
+    final TimezoneInfo localTimezone = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(localTimezone.identifier));
   }
 
   // Setup service locator and initialize dependencies

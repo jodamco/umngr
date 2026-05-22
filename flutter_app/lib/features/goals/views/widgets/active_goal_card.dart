@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:micro_manager/features/goals/models/goal_model.dart';
 import 'package:micro_manager/features/goals/views/widgets/goal_options_sheet.dart';
@@ -121,6 +122,7 @@ class ActiveGoalCard extends StatelessWidget {
   }
 
   void _showOptionsSheet(BuildContext context) {
+    HapticFeedback.heavyImpact();
     showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
