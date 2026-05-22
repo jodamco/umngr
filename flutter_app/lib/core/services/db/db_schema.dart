@@ -104,4 +104,27 @@ Future<void> createDatabaseFromSchema(Database db) async {
     LEFT JOIN goal_checkpoints gc ON g.id = gc.goal_id
     GROUP BY g.id
   ''');
+
+  // Create notifications table
+  await createNotificationsTable(db);
+}
+
+/// Creates the notifications table. Extracted so it can be reused in migrations.
+Future<void> createNotificationsTable(Database db) async {
+  await db.execute('''
+    CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      payload TEXT,
+      scheduled_at DATETIME NOT NULL,
+      is_cancelled INTEGER NOT NULL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  ''');
+
+  await db.execute('''
+    CREATE INDEX IF NOT EXISTS idx_notifications_scheduled_at
+    ON notifications(scheduled_at)
+  ''');
 }

@@ -32,7 +32,7 @@ class SqliteDbService implements DbAbstraction {
 
     _database = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -45,7 +45,9 @@ class SqliteDbService implements DbAbstraction {
 
   /// Called when the database version changes
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Handle database migrations here
+    if (oldVersion < 2) {
+      await createNotificationsTable(db);
+    }
   }
 
   /// Close the database
