@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:micro_manager/core/di/service_locator.dart';
-import 'package:micro_manager/core/services/notification/notification_service.dart';
 import 'package:micro_manager/core/utils/bottom_sheet_utils.dart';
 import 'package:micro_manager/features/goals/dal/goals_dal.dart';
 import 'package:micro_manager/features/goals/models/goal_model.dart';
@@ -21,7 +20,6 @@ class GoalsView extends StatefulWidget {
 
 class _GoalsViewState extends State<GoalsView> {
   late final GoalsDAL _goalsDAL;
-  late final NotificationService _notificationService;
   late final CheckpointNotificationsBLL _checkpointNotificationsBLL;
   late Future<List<GoalModel>> _goalsFuture;
 
@@ -29,7 +27,6 @@ class _GoalsViewState extends State<GoalsView> {
   void initState() {
     super.initState();
     _goalsDAL = getIt<GoalsDAL>();
-    _notificationService = getIt<NotificationService>();
     _checkpointNotificationsBLL = getIt<CheckpointNotificationsBLL>();
     // Create a future that delays showing data by at least 2 seconds
     _goalsFuture = _createDelayedGoalsFuture();
@@ -78,32 +75,6 @@ class _GoalsViewState extends State<GoalsView> {
             });
           }
         },
-      ),
-    );
-  }
-
-  Future<void> _testNotification() async {
-    final bool granted = await _notificationService.requestPermissions();
-    if (!mounted) return;
-    if (!granted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Notification permission denied'),
-          duration: Duration(seconds: 3),
-        ),
-      );
-      return;
-    }
-    await _notificationService.show(
-      id: 9999,
-      title: 'Test Notification',
-      body: 'Notifications are working correctly.',
-    );
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Test notification sent'),
-        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -163,7 +134,6 @@ class _GoalsViewState extends State<GoalsView> {
           goals: snapshot.data ?? <GoalModel>[],
           onCreateGoal: _showCreateGoalSheet,
           onGoalUpdated: _handleGoalUpdated,
-          onTestNotification: _testNotification,
         );
       },
     );
@@ -175,13 +145,11 @@ class _GoalsList extends StatelessWidget {
     required this.goals,
     required this.onCreateGoal,
     this.onGoalUpdated,
-    this.onTestNotification,
   });
 
   final List<GoalModel> goals;
   final Future<void> Function(BuildContext) onCreateGoal;
   final Future<void> Function(GoalModel)? onGoalUpdated;
-  final Future<void> Function()? onTestNotification;
 
   @override
   Widget build(BuildContext context) {
@@ -349,39 +317,6 @@ class _GoalsList extends StatelessWidget {
                       letterSpacing: 1.0,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: onTestNotification,
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.all(24),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(
-                    Icons.notifications_active_outlined,
-                    size: 24,
-                    color: theme.colorScheme.primary,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'TEST NOTIFICATION',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontSize: 16,
-                      letterSpacing: 1.0,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
                     ),
                   ),
                 ],

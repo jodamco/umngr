@@ -3,6 +3,7 @@ import 'package:micro_manager/features/goals/models/goal_model.dart';
 import 'package:micro_manager/features/notifications/bll/notifications_bll.dart';
 import 'package:micro_manager/features/notifications/dal/notifications_dal.dart';
 import 'package:micro_manager/features/notifications/models/notification_model.dart';
+import 'package:micro_manager/shared/enums.dart';
 
 /// Schedules device notifications for goal checkpoints.
 ///
@@ -51,18 +52,22 @@ class CheckpointNotificationsBLL {
       allOccurrences
           .take(_maxAheadCount)
           .map(
-            (({GoalCheckpoint checkpoint, DateTime date}) entry) =>
-                _notificationsBLL.scheduleNotification(
-                  title: goal.name,
-                  body: 'Checkpoint at ${entry.checkpoint.checkpointTime}',
-                  scheduledAt: entry.date,
-                  foreignId: goal.id,
-                  payload: <String, dynamic>{
-                    'type': NotificationPayloadType.checkpoint,
-                    'goal_id': goal.id,
-                    'checkpoint_id': entry.checkpoint.id,
-                  },
-                ),
+            (({GoalCheckpoint checkpoint, DateTime date}) entry) {
+              final ({String title, String body}) copy = GoalCategory
+                  .fromDbValue(goal.category)
+                  .pickNotification(goal.name);
+              return _notificationsBLL.scheduleNotification(
+                title: copy.title,
+                body: copy.body,
+                scheduledAt: entry.date,
+                foreignId: goal.id,
+                payload: <String, dynamic>{
+                  'type': NotificationPayloadType.checkpoint,
+                  'goal_id': goal.id,
+                  'checkpoint_id': entry.checkpoint.id,
+                },
+              );
+            },
           ),
     );
   }
@@ -117,18 +122,22 @@ class CheckpointNotificationsBLL {
           )
           .take(missing)
           .map(
-            (({GoalCheckpoint checkpoint, DateTime date}) entry) =>
-                _notificationsBLL.scheduleNotification(
-                  title: goal.name,
-                  body: 'Checkpoint at ${entry.checkpoint.checkpointTime}',
-                  scheduledAt: entry.date,
-                  foreignId: goal.id,
-                  payload: <String, dynamic>{
-                    'type': NotificationPayloadType.checkpoint,
-                    'goal_id': goal.id,
-                    'checkpoint_id': entry.checkpoint.id,
-                  },
-                ),
+            (({GoalCheckpoint checkpoint, DateTime date}) entry) {
+              final ({String title, String body}) copy = GoalCategory
+                  .fromDbValue(goal.category)
+                  .pickNotification(goal.name);
+              return _notificationsBLL.scheduleNotification(
+                title: copy.title,
+                body: copy.body,
+                scheduledAt: entry.date,
+                foreignId: goal.id,
+                payload: <String, dynamic>{
+                  'type': NotificationPayloadType.checkpoint,
+                  'goal_id': goal.id,
+                  'checkpoint_id': entry.checkpoint.id,
+                },
+              );
+            },
           ),
     );
   }
