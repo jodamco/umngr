@@ -4,6 +4,7 @@ import 'package:micro_manager/core/utils/bottom_sheet_utils.dart';
 import 'package:micro_manager/features/goals/dal/goals_dal.dart';
 import 'package:micro_manager/features/goals/models/goal_model.dart';
 import 'package:micro_manager/features/goals/models/new_goal_model.dart';
+import 'package:micro_manager/features/goals/bll/efficiency_bll.dart';
 import 'package:micro_manager/features/goals/views/widgets/active_goal_card.dart';
 import 'package:micro_manager/features/goals/views/widgets/summary_card.dart';
 import 'package:micro_manager/features/goals/views/widgets/efficiency_rating_card.dart';
@@ -154,6 +155,7 @@ class _GoalsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final double efficiency = EfficiencyBLL().calculateEfficiency(goals);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(left: 24, top: 24, right: 24, bottom: 16),
@@ -165,22 +167,26 @@ class _GoalsList extends StatelessWidget {
             builder: (BuildContext context, BoxConstraints constraints) {
               final bool isSmall = constraints.maxWidth < 600;
               return isSmall
-                  ? const Column(
+                  ? Column(
                       children: <Widget>[
-                        SummaryCard(),
-                        SizedBox(height: 24),
-                        EfficiencyRatingCard(),
+                        const SummaryCard(),
+                        const SizedBox(height: 24),
+                        EfficiencyRatingCard(
+                          efficiencyPercentage: efficiency,
+                        ),
                       ],
                     )
-                  : const Row(
+                  : Row(
                       children: <Widget>[
-                        Expanded(
+                        const Expanded(
                           flex: 2,
                           child: SummaryCard(),
                         ),
-                        SizedBox(width: 24),
+                        const SizedBox(width: 24),
                         Expanded(
-                          child: EfficiencyRatingCard(),
+                          child: EfficiencyRatingCard(
+                            efficiencyPercentage: efficiency,
+                          ),
                         ),
                       ],
                     );

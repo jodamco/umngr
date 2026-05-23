@@ -5,7 +5,7 @@ class EfficiencyRatingCard extends StatelessWidget {
 
   const EfficiencyRatingCard({
     super.key,
-    this.efficiencyPercentage = 0.4,
+    this.efficiencyPercentage = 0.0,
   });
 
   @override
