@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:micro_manager/features/goals/views/widgets/efficiency_audit_dialog.dart';
 
 class EfficiencyRatingCard extends StatelessWidget {
   final double efficiencyPercentage;
@@ -12,7 +13,9 @@ class EfficiencyRatingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
-    return Container(
+    return GestureDetector(
+      onTap: () => showEfficiencyAuditDialog(context),
+      child: Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border.all(
@@ -62,6 +65,7 @@ class EfficiencyRatingCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }
