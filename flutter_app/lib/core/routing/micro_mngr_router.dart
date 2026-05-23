@@ -7,6 +7,9 @@ import 'package:micro_manager/widgets/micro_mngr_app_bar.dart';
 import 'package:micro_manager/widgets/micro_mngr_nav_bar.dart';
 
 abstract final class MicroMngrRouter {
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
   static String _getTitleForRoute(GoRouterState state) {
     final String location = state.uri.path;
 
@@ -27,6 +30,7 @@ abstract final class MicroMngrRouter {
   }
 
   static final GoRouter router = GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: Routes.goals,
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(

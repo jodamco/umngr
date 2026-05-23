@@ -30,9 +30,8 @@ class NotificationsDAL {
     return maps.map(NotificationModel.fromMap).toList();
   }
 
-  Future<void> cancelNotification(int id) => _db.update(
+  Future<void> cancelNotification(int id) => _db.delete(
     table: _table,
-    values: <String, dynamic>{'is_cancelled': 1},
     where: 'id = ?',
     whereArgs: <dynamic>[id],
   );

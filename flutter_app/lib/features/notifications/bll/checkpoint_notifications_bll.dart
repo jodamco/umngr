@@ -1,3 +1,4 @@
+import 'package:micro_manager/core/services/notification/notification_tap_handler.dart';
 import 'package:micro_manager/features/goals/models/goal_model.dart';
 import 'package:micro_manager/features/notifications/bll/notifications_bll.dart';
 import 'package:micro_manager/features/notifications/dal/notifications_dal.dart';
@@ -57,6 +58,7 @@ class CheckpointNotificationsBLL {
                   scheduledAt: entry.date,
                   foreignId: goal.id,
                   payload: <String, dynamic>{
+                    'type': NotificationPayloadType.checkpoint,
                     'goal_id': goal.id,
                     'checkpoint_id': entry.checkpoint.id,
                   },
@@ -122,6 +124,7 @@ class CheckpointNotificationsBLL {
                   scheduledAt: entry.date,
                   foreignId: goal.id,
                   payload: <String, dynamic>{
+                    'type': NotificationPayloadType.checkpoint,
                     'goal_id': goal.id,
                     'checkpoint_id': entry.checkpoint.id,
                   },
