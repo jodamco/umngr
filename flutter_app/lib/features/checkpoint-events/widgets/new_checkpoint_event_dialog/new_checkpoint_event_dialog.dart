@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:micro_manager/core/di/service_locator.dart';
+import 'package:micro_manager/core/services/app_data_notifier.dart';
 import 'package:micro_manager/features/checkpoint-events/dal/checkpoint_events_dal.dart';
 import 'package:micro_manager/features/checkpoint-events/models/checkpoint_event_model.dart';
 import 'package:micro_manager/features/checkpoint-events/widgets/new_checkpoint_event_dialog/checkpoint_step_01_view.dart';
@@ -72,6 +73,7 @@ class _NewCheckpointEventDialogState extends State<NewCheckpointEventDialog> {
       // Save to database
       final CheckpointEventsDAL dal = getIt<CheckpointEventsDAL>();
       await dal.createCheckpointEvent(checkpoint);
+      getIt<AppDataNotifier>().onCheckpointAdded();
 
       widget.onCheckpointSubmitted?.call(checkpoint);
 

@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_it/get_it.dart';
+import 'package:micro_manager/core/services/app_data_notifier.dart';
 import 'package:micro_manager/core/services/db/db_service.dart';
 import 'package:micro_manager/core/services/notification/notification_service.dart';
 import 'package:micro_manager/features/checkpoint-events/dal/checkpoint_events_dal.dart';
@@ -19,6 +20,9 @@ Future<void> setupServiceLocator({
   final SqliteDbService dbService = SqliteDbService();
   await dbService.init();
   getIt.registerSingleton<DbAbstraction>(dbService);
+
+  // Register app-wide event notifier
+  getIt.registerSingleton<AppDataNotifier>(AppDataNotifier());
 
   // Register DAL services
   getIt.registerSingleton<GoalsDAL>(GoalsDAL(getIt<DbAbstraction>()));

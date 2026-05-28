@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:micro_manager/core/di/service_locator.dart';
+import 'package:micro_manager/core/services/app_data_notifier.dart';
 import 'package:micro_manager/core/utils/bottom_sheet_utils.dart';
 import 'package:micro_manager/features/goals/dal/goals_dal.dart';
 import 'package:micro_manager/features/goals/models/goal_model.dart';
@@ -63,6 +64,7 @@ class _GoalsViewState extends State<GoalsView> {
         onGoalCreated: (NewGoalModel goal) async {
           // Save goal to database
           await _goalsDAL.createGoal(goal);
+          getIt<AppDataNotifier>().onGoalChanged();
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -84,6 +86,7 @@ class _GoalsViewState extends State<GoalsView> {
     // Update goal in database
     await _goalsDAL.updateGoal(updatedGoal);
     await _checkpointNotificationsBLL.scheduleForGoal(updatedGoal);
+    getIt<AppDataNotifier>().onGoalChanged();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

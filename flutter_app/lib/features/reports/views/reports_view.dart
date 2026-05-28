@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:micro_manager/core/di/service_locator.dart';
+import 'package:micro_manager/core/utils/bottom_sheet_utils.dart';
+import 'package:micro_manager/core/services/app_data_notifier.dart';
 import 'package:micro_manager/core/theme/micro_mngr_theme.dart';
 import 'package:micro_manager/features/checkpoint-events/models/checkpoint_event_model.dart';
 import 'package:micro_manager/features/reports/dal/reports_dal.dart';
@@ -18,13 +20,30 @@ class ReportsView extends StatefulWidget {
 
 class _ReportsViewState extends State<ReportsView> {
   late final ReportsDAL _reportsDAL;
+  late final AppDataNotifier _dataNotifier;
   late Future<ReportOverviewModel> _dataFuture;
 
   @override
   void initState() {
     super.initState();
     _reportsDAL = getIt<ReportsDAL>();
+    _dataNotifier = getIt<AppDataNotifier>();
+    _dataNotifier.addListener(_onDataChanged);
     _dataFuture = _reportsDAL.getReportData();
+  }
+
+  @override
+  void dispose() {
+    _dataNotifier.removeListener(_onDataChanged);
+    super.dispose();
+  }
+
+  void _onDataChanged() {
+    if (mounted) {
+      setState(() {
+        _dataFuture = _reportsDAL.getReportData();
+      });
+    }
   }
 
   @override
@@ -79,10 +98,12 @@ class _ReportsViewState extends State<ReportsView> {
                       today: data.today,
                     ),
                     const SizedBox(height: 32),
-                    _RecentObligationsSection(
-                      events: data.recentEvents,
+                    _RecentCheckpointsSection(
+                      events: data.periodEvents,
                       goalNames: data.goalNames,
                     ),
+                    const SizedBox(height: 16),
+                    const _SystemLogOverflowCard(),
                   ],
                 ),
               ),
@@ -191,14 +212,16 @@ class _MetricsSection extends StatelessWidget {
             valueIsSmall: true,
           ),
         ],
-        const SizedBox(height: 8),
-        _MetricCard(
-          label: 'CRITICAL_FAILURE',
-          value: data.criticalFailure ?? '—',
-          footer: 'MECHANICAL NEGLECT DETECTED',
-          isCritical: true,
-          valueIsSmall: true,
-        ),
+        if (data.criticalFailure != null) ...<Widget>[
+          const SizedBox(height: 8),
+          _MetricCard(
+            label: 'CRITICAL_FAILURE',
+            value: data.criticalFailure!,
+            footer: 'MECHANICAL NEGLECT DETECTED',
+            isCritical: true,
+            valueIsSmall: true,
+          ),
+        ],
       ],
     );
   }
@@ -423,6 +446,20 @@ class _PersistenceMatrixState extends State<_PersistenceMatrix> {
   Color _colorForCount(int count) {
     if (count == 0) return MicroMngrTheme.surfaceContainerHighest;
     if (count <= 2) return MicroMngrTheme.outlineVariant.withValues(alpha: 1.0);
+    if (count <= 4) {
+      return Color.lerp(
+        MicroMngrTheme.outlineVariant,
+        MicroMngrTheme.primaryFixedDim,
+        0.33,
+      )!;
+    }
+    if (count <= 6) {
+      return Color.lerp(
+        MicroMngrTheme.outlineVariant,
+        MicroMngrTheme.primaryFixedDim,
+        0.66,
+      )!;
+    }
     return MicroMngrTheme.primaryFixedDim;
   }
 
@@ -479,6 +516,22 @@ class _PersistenceMatrixState extends State<_PersistenceMatrix> {
                 ),
                 const SizedBox(width: 2),
                 const _LegendBlock(color: MicroMngrTheme.outlineVariant),
+                const SizedBox(width: 2),
+                _LegendBlock(
+                  color: Color.lerp(
+                    MicroMngrTheme.outlineVariant,
+                    MicroMngrTheme.primaryFixedDim,
+                    0.33,
+                  )!,
+                ),
+                const SizedBox(width: 2),
+                _LegendBlock(
+                  color: Color.lerp(
+                    MicroMngrTheme.outlineVariant,
+                    MicroMngrTheme.primaryFixedDim,
+                    0.66,
+                  )!,
+                ),
                 const SizedBox(width: 2),
                 const _LegendBlock(color: MicroMngrTheme.primaryFixedDim),
                 const SizedBox(width: 4),
@@ -625,11 +678,11 @@ class _LegendBlock extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Recent obligations
+// Recent checkpoints
 // ---------------------------------------------------------------------------
 
-class _RecentObligationsSection extends StatelessWidget {
-  const _RecentObligationsSection({
+class _RecentCheckpointsSection extends StatelessWidget {
+  const _RecentCheckpointsSection({
     required this.events,
     required this.goalNames,
   });
@@ -637,17 +690,45 @@ class _RecentObligationsSection extends StatelessWidget {
   final List<CheckpointEventModel> events;
   final Map<int, String> goalNames;
 
+  void _showAll(BuildContext context) {
+    showMicroMngrBottomSheet<void>(
+      context: context,
+      builder: (_) => _AllCheckpointsSheet(
+        events: events,
+        goalNames: goalNames,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final List<CheckpointEventModel> preview = events.take(5).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          'RECENT_OBLIGATIONS',
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            letterSpacing: 1.0,
-            color: MicroMngrTheme.onBackground,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text(
+              'RECENT_CHECKPOINTS',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                letterSpacing: 1.0,
+                color: MicroMngrTheme.onBackground,
+              ),
+            ),
+            GestureDetector(
+              onTap: () => _showAll(context),
+              child: Text(
+                'EXHIBIT_ALL',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  letterSpacing: 1.0,
+                  color: MicroMngrTheme.primaryFixedDim,
+                  decoration: TextDecoration.underline,
+                  decorationColor: MicroMngrTheme.primaryFixedDim,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         if (events.isEmpty)
@@ -667,7 +748,7 @@ class _RecentObligationsSection extends StatelessWidget {
             ),
           )
         else
-          ...events.map(
+          ...preview.map(
             (CheckpointEventModel e) => _ObligationRow(
               event: e,
               goalName: goalNames[e.goalId] ?? 'UNKNOWN',
@@ -677,6 +758,214 @@ class _RecentObligationsSection extends StatelessWidget {
     );
   }
 }
+
+class _AllCheckpointsSheet extends StatelessWidget {
+  const _AllCheckpointsSheet({
+    required this.events,
+    required this.goalNames,
+  });
+
+  final List<CheckpointEventModel> events;
+  final Map<int, String> goalNames;
+
+  List<Object> get _items {
+    final List<Object> items = <Object>[];
+    String? lastDay;
+    for (final CheckpointEventModel e in events) {
+      final DateTime dt = e.eventDateTime;
+      final String day =
+          '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+      if (day != lastDay) {
+        items.add(day);
+        lastDay = day;
+      }
+      items.add(e);
+    }
+    return items;
+  }
+
+  String _formatDateLabel(String dayKey) {
+    final List<String> parts = dayKey.split('-');
+    final DateTime dt = DateTime(
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+      int.parse(parts[2]),
+    );
+    const List<String> months = <String>[
+      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+    ];
+    return '${months[dt.month - 1]}_${dt.day.toString().padLeft(2, '0')}_${dt.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Object> items = _items;
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (BuildContext context, ScrollController scrollController) {
+        return Column(
+          children: <Widget>[
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+              decoration: const BoxDecoration(
+                color: MicroMngrTheme.surfaceContainer,
+                border: Border(
+                  bottom: BorderSide(color: MicroMngrTheme.outlineVariant),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    'ALL_CHECKPOINTS',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      letterSpacing: 1.0,
+                      color: MicroMngrTheme.onBackground,
+                    ),
+                  ),
+                  Text(
+                    '${events.length}_RECORDS',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: MicroMngrTheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                itemCount: items.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final Object item = items[index];
+                  if (item is String) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 16, bottom: 6),
+                      child: Row(
+                        children: <Widget>[
+                          Text(
+                            _formatDateLabel(item),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  letterSpacing: 1.0,
+                                  color: MicroMngrTheme.primaryFixedDim,
+                                ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Divider(
+                              color: MicroMngrTheme.outlineVariant
+                                  .withValues(alpha: 0.5),
+                              height: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  final CheckpointEventModel e =
+                      item as CheckpointEventModel;
+                  return _ObligationRow(
+                    event: e,
+                    goalName: goalNames[e.goalId] ?? 'UNKNOWN',
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// System log overflow card
+// ---------------------------------------------------------------------------
+
+class _SystemLogOverflowCard extends StatelessWidget {
+  const _SystemLogOverflowCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: MicroMngrTheme.background,
+        border: Border.all(color: MicroMngrTheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              const Icon(
+                Icons.warning_amber_rounded,
+                size: 14,
+                color: MicroMngrTheme.error,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'SYSTEM_LOG_OVERFLOW',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  letterSpacing: 1.0,
+                  color: MicroMngrTheme.error,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _LogLine(
+            text: '[SYS::WARN]   MOTIVATIONAL_SUBROUTINE_UNRESPONSIVE',
+            color: MicroMngrTheme.error,
+          ),
+          const SizedBox(height: 4),
+          _LogLine(
+            text: '[SYS::NOTICE] STREAK_COUNTER_RESET_DETECTED',
+            color: MicroMngrTheme.onSurfaceVariant,
+          ),
+          const SizedBox(height: 4),
+          _LogLine(
+            text: '[SYS::SUCCESS] OBLIGATION_DATA_SYNCED',
+            color: MicroMngrTheme.primaryFixedDim,
+          ),
+          const SizedBox(height: 4),
+          _LogLine(
+            text: '[SYS::TRACE]  USER_PROCRASTINATION_NOMINAL',
+            color: MicroMngrTheme.onSurfaceVariant,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LogLine extends StatelessWidget {
+  const _LogLine({required this.text, required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+        color: color,
+        fontSize: 10,
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Obligation row
+// ---------------------------------------------------------------------------
 
 class _ObligationRow extends StatelessWidget {
   const _ObligationRow({required this.event, required this.goalName});
