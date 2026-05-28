@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:micro_manager/core/routing/routes.dart';
 import 'package:micro_manager/features/goals/views/goals_view.dart';
 import 'package:micro_manager/features/goals/views/goal_detail_view.dart';
+import 'package:micro_manager/features/reports/views/reports_view.dart';
 import 'package:micro_manager/widgets/micro_mngr_app_bar.dart';
 import 'package:micro_manager/widgets/micro_mngr_nav_bar.dart';
 
@@ -19,6 +20,7 @@ abstract final class MicroMngrRouter {
 
     return switch (location) {
       Routes.goals => 'µMNGR: OH, YOU\'RE BACK.',
+      Routes.reports => 'AUDIT_LOG_v4.2',
       _ => 'µMNGR: OH, YOU\'RE BACK.',
     };
   }
@@ -70,6 +72,15 @@ abstract final class MicroMngrRouter {
                     },
                   ),
                 ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: Routes.reports,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const ReportsView(),
               ),
             ],
           ),

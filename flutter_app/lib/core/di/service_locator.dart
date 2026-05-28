@@ -4,6 +4,7 @@ import 'package:micro_manager/core/services/db/db_service.dart';
 import 'package:micro_manager/core/services/notification/notification_service.dart';
 import 'package:micro_manager/features/checkpoint-events/dal/checkpoint_events_dal.dart';
 import 'package:micro_manager/features/goals/dal/goals_dal.dart';
+import 'package:micro_manager/features/reports/dal/reports_dal.dart';
 import 'package:micro_manager/features/notifications/bll/checkpoint_notifications_bll.dart';
 import 'package:micro_manager/features/notifications/bll/notifications_bll.dart';
 import 'package:micro_manager/features/notifications/dal/notifications_dal.dart';
@@ -25,6 +26,8 @@ Future<void> setupServiceLocator({
   getIt.registerSingleton<CheckpointEventsDAL>(
     CheckpointEventsDAL(getIt<DbAbstraction>()),
   );
+
+  getIt.registerSingleton<ReportsDAL>(ReportsDAL(getIt<DbAbstraction>()));
 
   getIt.registerSingleton<NotificationsDAL>(
     NotificationsDAL(getIt<DbAbstraction>()),

@@ -63,20 +63,11 @@ class MicroMngrNavBar extends StatelessWidget {
           BottomNavigationBarItem(
             icon: _buildNavItem(
               isSelected: navigationShell.currentIndex == 1,
-              icon: Icons.error,
-              label: 'FAILURES',
-              theme: theme,
-            ),
-            label: 'FAILURES',
-          ),
-          BottomNavigationBarItem(
-            icon: _buildNavItem(
-              isSelected: navigationShell.currentIndex == 2,
               icon: Icons.visibility,
-              label: 'INSIGHTS',
+              label: 'JUDGMENT',
               theme: theme,
             ),
-            label: 'INSIGHTS',
+            label: 'JUDGMENT',
           ),
         ],
       ),
