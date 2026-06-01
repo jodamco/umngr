@@ -13,26 +13,11 @@ abstract final class MicroMngrRouter {
       GlobalKey<NavigatorState>();
 
   static String _getTitleForRoute(GoRouterState state) {
-    final String location = state.uri.path;
-
-    if (location.contains('/goals/details/')) {
-      return 'PROTOCOL_OVERVIEW';
-    }
-    if (location.contains('/reports/goals/')) {
-      return 'GOAL_REPORT';
-    }
-
-    return switch (location) {
+    return switch (state.uri.path) {
       Routes.goals => 'µMNGR: OH, YOU\'RE BACK.',
       Routes.reports => 'AUDIT_LOG_v4.2',
       _ => 'µMNGR: OH, YOU\'RE BACK.',
     };
-  }
-
-  static bool _shouldShowBackButton(GoRouterState state) {
-    final String location = state.uri.path;
-    return location.contains('/details/') ||
-        location.contains('/reports/goals/');
   }
 
   static final GoRouter router = GoRouter(
@@ -49,7 +34,7 @@ abstract final class MicroMngrRouter {
               return Scaffold(
                 appBar: MicroMngrAppBar(
                   title: _getTitleForRoute(state),
-                  showBackButton: _shouldShowBackButton(state),
+                  showBackButton: false,
                 ),
                 body: navigationShell,
                 bottomNavigationBar: MicroMngrNavBar(
@@ -65,17 +50,6 @@ abstract final class MicroMngrRouter {
                 path: Routes.goals,
                 builder: (BuildContext context, GoRouterState state) =>
                     const GoalsView(),
-                routes: <RouteBase>[
-                  GoRoute(
-                    path: 'details/:goalId',
-                    builder: (BuildContext context, GoRouterState state) {
-                      final String goalId = state.pathParameters['goalId']!;
-                      return GoalDetailView(
-                        goalId: int.parse(goalId),
-                      );
-                    },
-                  ),
-                ],
               ),
             ],
           ),
@@ -85,22 +59,33 @@ abstract final class MicroMngrRouter {
                 path: Routes.reports,
                 builder: (BuildContext context, GoRouterState state) =>
                     const ReportsView(),
-                routes: <RouteBase>[
-                  GoRoute(
-                    path: 'goals/:goalId',
-                    builder: (BuildContext context, GoRouterState state) {
-                      final String goalId =
-                          state.pathParameters['goalId']!;
-                      return GoalReportView(
-                        goalId: int.parse(goalId),
-                      );
-                    },
-                  ),
-                ],
               ),
             ],
           ),
         ],
+      ),
+      GoRoute(
+        parentNavigatorKey: navigatorKey,
+        path: Routes.goalDetail,
+        builder: (BuildContext context, GoRouterState state) {
+          final String goalId = state.pathParameters['goalId']!;
+          return GoalDetailView(goalId: int.parse(goalId));
+        },
+      ),
+      GoRoute(
+        parentNavigatorKey: navigatorKey,
+        path: Routes.goalReport,
+        builder: (BuildContext context, GoRouterState state) {
+          final String goalId = state.pathParameters['goalId']!;
+          return Scaffold(
+            appBar: const MicroMngrAppBar(
+              title: 'GOAL_REPORT',
+              showBackButton: true,
+            ),
+            body: GoalReportView(goalId: int.parse(goalId)),
+            resizeToAvoidBottomInset: false,
+          );
+        },
       ),
     ],
     errorBuilder: (BuildContext context, GoRouterState state) => Scaffold(

@@ -137,7 +137,7 @@ class ActiveGoalCard extends StatelessWidget {
   }
 
   void _navigateToGoalDetail(BuildContext context) {
-    context.go('/goals/details/${goal.id}');
+    context.push('/goals/details/${goal.id}');
   }
 
   @override

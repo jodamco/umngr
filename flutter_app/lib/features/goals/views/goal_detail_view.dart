@@ -3,6 +3,7 @@ import 'package:crypto/crypto.dart';
 import 'package:go_router/go_router.dart';
 import 'package:micro_manager/core/di/service_locator.dart';
 import 'package:micro_manager/core/theme/micro_mngr_theme.dart';
+import 'package:micro_manager/widgets/micro_mngr_app_bar.dart';
 import 'package:micro_manager/features/checkpoint-events/dal/checkpoint_events_dal.dart';
 import 'package:micro_manager/features/checkpoint-events/models/checkpoint_event_model.dart';
 import 'package:micro_manager/features/goals/dal/goals_dal.dart';
@@ -91,6 +92,10 @@ class _GoalDetailViewState extends State<GoalDetailView> {
           ) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
+                appBar: MicroMngrAppBar(
+                  title: 'PROTOCOL_OVERVIEW',
+                  showBackButton: true,
+                ),
                 body: Center(
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
@@ -103,6 +108,10 @@ class _GoalDetailViewState extends State<GoalDetailView> {
 
             if (snapshot.hasError || snapshot.data?.goal == null) {
               return Scaffold(
+                appBar: const MicroMngrAppBar(
+                  title: 'PROTOCOL_OVERVIEW',
+                  showBackButton: true,
+                ),
                 body: Center(
                   child: Text('Error loading goal: ${snapshot.error}'),
                 ),
@@ -113,10 +122,14 @@ class _GoalDetailViewState extends State<GoalDetailView> {
             final List<CheckpointEventModel> events = snapshot.data!.events;
 
             return Scaffold(
+              appBar: const MicroMngrAppBar(
+                title: 'PROTOCOL_OVERVIEW',
+                showBackButton: true,
+              ),
               backgroundColor: MicroMngrTheme.background,
               floatingActionButton: FloatingActionButton.extended(
                 onPressed: () =>
-                    context.go('/reports/goals/${goal.id}'),
+                    context.push('/reports/goals/${goal.id}'),
                 backgroundColor: MicroMngrTheme.surfaceContainerHigh,
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.zero,
