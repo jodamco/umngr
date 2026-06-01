@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
+import 'package:go_router/go_router.dart';
 import 'package:micro_manager/core/di/service_locator.dart';
 import 'package:micro_manager/core/theme/micro_mngr_theme.dart';
 import 'package:micro_manager/features/checkpoint-events/dal/checkpoint_events_dal.dart';
@@ -113,6 +114,28 @@ class _GoalDetailViewState extends State<GoalDetailView> {
 
             return Scaffold(
               backgroundColor: MicroMngrTheme.background,
+              floatingActionButton: FloatingActionButton.extended(
+                onPressed: () =>
+                    context.go('/reports/goals/${goal.id}'),
+                backgroundColor: MicroMngrTheme.surfaceContainerHigh,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                  side: BorderSide(color: MicroMngrTheme.outlineVariant),
+                ),
+                elevation: 0,
+                icon: const Icon(
+                  Icons.analytics_outlined,
+                  size: 16,
+                  color: MicroMngrTheme.primaryFixedDim,
+                ),
+                label: Text(
+                  'VIEW_REPORT',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    letterSpacing: 1.0,
+                    color: MicroMngrTheme.primaryFixedDim,
+                  ),
+                ),
+              ),
               body: CustomScrollView(
                 slivers: <Widget>[
                   SliverPadding(

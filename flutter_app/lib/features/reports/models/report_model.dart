@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:micro_manager/features/checkpoint-events/models/checkpoint_event_model.dart';
+import 'package:micro_manager/shared/enums.dart';
 
 String _dayKey(DateTime dt) => '${dt.year}-${dt.month}-${dt.day}';
 
@@ -22,15 +23,19 @@ class ReportGoal {
   const ReportGoal({
     required this.id,
     required this.name,
+    required this.category,
     required this.cycle,
     required this.activeDays,
+    required this.dataMetricType,
     this.occurrences,
   });
 
   final int id;
   final String name;
+  final String category;
   final String cycle;
   final List<String> activeDays;
+  final GoalDataMetricType dataMetricType;
   final int? occurrences;
 
   factory ReportGoal.fromMap(Map<String, dynamic> map) {
@@ -46,8 +51,12 @@ class ReportGoal {
     return ReportGoal(
       id: map['id'] as int,
       name: map['name'] as String,
+      category: map['category'] as String? ?? '',
       cycle: map['cycle'] as String,
       activeDays: activeDays,
+      dataMetricType: GoalDataMetricType.fromString(
+        map['data_metric_type'] as String? ?? 'nullSet',
+      ),
       occurrences: map['occurrences'] as int?,
     );
   }

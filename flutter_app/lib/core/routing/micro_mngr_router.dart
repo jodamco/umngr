@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:micro_manager/core/routing/routes.dart';
 import 'package:micro_manager/features/goals/views/goals_view.dart';
 import 'package:micro_manager/features/goals/views/goal_detail_view.dart';
+import 'package:micro_manager/features/reports/views/goal_report_view.dart';
 import 'package:micro_manager/features/reports/views/reports_view.dart';
 import 'package:micro_manager/widgets/micro_mngr_app_bar.dart';
 import 'package:micro_manager/widgets/micro_mngr_nav_bar.dart';
@@ -14,8 +15,11 @@ abstract final class MicroMngrRouter {
   static String _getTitleForRoute(GoRouterState state) {
     final String location = state.uri.path;
 
-    if (location.contains('details')) {
+    if (location.contains('/goals/details/')) {
       return 'PROTOCOL_OVERVIEW';
+    }
+    if (location.contains('/reports/goals/')) {
+      return 'GOAL_REPORT';
     }
 
     return switch (location) {
@@ -27,8 +31,8 @@ abstract final class MicroMngrRouter {
 
   static bool _shouldShowBackButton(GoRouterState state) {
     final String location = state.uri.path;
-    // Show back button for subroutes (e.g., details pages)
-    return location.contains('details');
+    return location.contains('/details/') ||
+        location.contains('/reports/goals/');
   }
 
   static final GoRouter router = GoRouter(
@@ -81,6 +85,18 @@ abstract final class MicroMngrRouter {
                 path: Routes.reports,
                 builder: (BuildContext context, GoRouterState state) =>
                     const ReportsView(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'goals/:goalId',
+                    builder: (BuildContext context, GoRouterState state) {
+                      final String goalId =
+                          state.pathParameters['goalId']!;
+                      return GoalReportView(
+                        goalId: int.parse(goalId),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
